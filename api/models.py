@@ -5,13 +5,13 @@ class User(models.Model):
     first_name = models.CharField(max_length=64, blank=False)
     last_name = models.CharField(max_length=64, blank=False)
     email = models.EmailField(max_length=128, unique=True, blank=False)
-    password_hash = models.CharField(max_length=256, blank=False)
+    password = models.CharField(max_length=256, blank=False)
     username = models.CharField(max_length=32, unique=True, blank=False)
     phone_number = models.CharField(max_length=32)
     role = models.CharField(max_length=8, blank=False, default="normal")
 
     profile_image_path = models.CharField(max_length=128)
-    invitation_is_pending = models.BooleanField(default=False, blank=False)
+    invitation_is_pending = models.BooleanField(blank=False, default=False)
 
 
 class InvitedEmail(models.Model):
