@@ -1,17 +1,14 @@
+from django.contrib.auth.base_user import AbstractBaseUser
 from django.db import models
 
 
-class User(models.Model):
+class User(AbstractBaseUser):
+    username = models.CharField(max_length=32, primary_key=True, blank=False)
     first_name = models.CharField(max_length=64, blank=False)
     last_name = models.CharField(max_length=64, blank=False)
     email = models.EmailField(max_length=128, unique=True, blank=False)
-    password = models.CharField(max_length=256, blank=False)
-    username = models.CharField(max_length=32, unique=True, blank=False)
-    phone_number = models.CharField(max_length=32)
-    role = models.CharField(max_length=8, blank=False, default="normal")
-
-    profile_image_path = models.CharField(max_length=128)
-    invitation_is_pending = models.BooleanField(blank=False, default=False)
+    profile_image_path = models.CharField(max_length=128, blank=True)
+    is_admin = models.BooleanField(default=False)
 
 
 class InvitedEmail(models.Model):

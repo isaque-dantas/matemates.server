@@ -6,10 +6,10 @@ from api.models import User
 class UserResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        exclude = ['id', 'password']
+        exclude = ['password']
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'username', 'email', 'phone_number', 'password']
+        fields = ['first_name', 'last_name', 'username', 'email', 'password']
