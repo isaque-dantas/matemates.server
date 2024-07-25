@@ -14,15 +14,12 @@ def hello_world(request):
 @api_view(['GET', 'POST'])
 def users(request):
     if request.method == 'GET':
-        return Response(User.objects.all())
+        return Response(list(map(lambda user: UserSerializer(data=user).data, User.objects.all())))
     elif request.method == 'POST':
-        data = request.data
-        data['role'] = None
-
+        data = request.data.copy()
         serializer = UserSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-
