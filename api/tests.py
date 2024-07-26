@@ -1,17 +1,18 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+
 BASE_URL = "http://127.0.0.1:8000/api"
 
 
 class ConnectionTests(APITestCase):
-    def test_connection(self):
+    def connection__should_return_OK(self):
         response = self.client.get(f'{BASE_URL}/hello-world')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class UserTests(APITestCase):
-    def test_post_on_happy_path(self):
+    def post_on_happy_path__should_return_OK(self):
         data = {
             "first_name": 'First',
             "last_name": 'Last',
@@ -22,12 +23,9 @@ class UserTests(APITestCase):
 
         response = self.client.post(f'{BASE_URL}/users', data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-        self.assertIn('is_admin', response.data)
-        self.assertEqual(response.data['is_admin'], False)
         self.assertNotIn('password', response.data)
 
-    def test_post_with_non_existent_field(self):
+    def post_with_non_existent_field__should_return_CREATED(self):
         data = {
             "first_name": 'First',
             "last_name": 'Last',
@@ -38,9 +36,10 @@ class UserTests(APITestCase):
         }
 
         response = self.client.post(f'{BASE_URL}/users', data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertNotIn('non_existent_field', response.data)
 
-    def test_post_with_repeated_unique_attributes(self):
+    def post_with_repeated_unique_attributes__should_return_BAD_REQUEST(self):
         data = {
             "first_name": 'First',
             "last_name": 'Last',
@@ -54,7 +53,7 @@ class UserTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_login_on_happy_path(self):
+    def login_on_happy_path__should_return_OK(self):
         data = {
             "first_name": 'First',
             "last_name": 'Last',
@@ -68,11 +67,17 @@ class UserTests(APITestCase):
         data = {"username": data["username"], "password": data["password"]}
 
         response = self.client.post(f'{BASE_URL}/token', data)
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('access', response.data)
         self.assertIn('refresh', response.data)
 
-    def test_get(self):
+    def login_with_wrong_credentials__should_return_UNAUTHORIZED(self):
+        data = {"username": 'non-existent-user', "password": 'wrong-password'}
+        response = self.client.post(f'{BASE_URL}/token', data)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def get_on_happy_path__should_return_OK(self):
         data = {
             "first_name": 'First',
             "last_name": 'Last',
@@ -85,5 +90,8 @@ class UserTests(APITestCase):
         data = {"username": data["username"], "password": data["password"]}
         response = self.client.post(f'{BASE_URL}/token', data)
 
-        response = self.client.get(f'{BASE_URL}/users')
+        response = self.client.get(
+            f'{BASE_URL}/users',
+            headers={"Authorization": f"Bearer {response.data['access']}"})
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)

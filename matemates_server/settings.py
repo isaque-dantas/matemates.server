@@ -77,6 +77,8 @@ REST_FRAMEWORK = {
     )
 }
 
+AUTH_USER_MODEL = 'api.User'
+
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
