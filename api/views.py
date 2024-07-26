@@ -30,3 +30,14 @@ class UserView(APIView):
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(creation_serializer.error_messages, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['PUT'])
+    def put(self, request):
+        if request.user.is_authenticated:
+            serializer = UserResponseSerializer(request.user)
+
+    @action(detail=True, methods=['DELETE'])
+    def delete(self, request):
+        if request.user.is_authenticated:
+            serializer = UserResponseSerializer(request.user)
+            request.user.delete()
