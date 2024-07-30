@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.test import APITestCase
 
-from api.models import User
+from api.models.user import User
 from api.serializers.serializers import UserSerializer
 from matemates_server import settings
 

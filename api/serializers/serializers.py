@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from api.models import User
+from api.models.user import User
 from matemates_server import settings
 
 
