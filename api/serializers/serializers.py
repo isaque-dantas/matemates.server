@@ -12,10 +12,12 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         password = validated_data.pop('password', None)
-        instance = self.Meta.model(**validated_data)
 
-        if validated_data['email'] == settings.ADMIN_EMAIL:
-            instance.is_admin = True
+        validated_data.update(
+            {'is_admin': validated_data['email'] == settings.ADMIN_EMAIL}
+        )
+
+        instance = self.Meta.model(**validated_data)
 
         instance.is_active = True
         if password is not None:

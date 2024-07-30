@@ -26,7 +26,7 @@ class User(AbstractBaseUser):
     last_name = models.CharField(max_length=64, blank=False)
     email = models.EmailField(max_length=128, unique=True, blank=False)
     profile_image_path = models.CharField(max_length=128, blank=True)
-    is_admin = models.BooleanField(default=False, blank=True)
+    is_admin = models.BooleanField(default=False)
 
     objects = UserManager()
     USERNAME_FIELD = 'username'

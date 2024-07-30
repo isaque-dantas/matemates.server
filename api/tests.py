@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.test import APITestCase
 
 from api.models import User
-from api.serializers import UserSerializer
+from api.serializers.serializers import UserSerializer
 from matemates_server import settings
 
 BASE_URL = "http://127.0.0.1:8000/api"
@@ -85,6 +85,7 @@ class UserTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertNotIn('password', response.data)
+        self.assertFalse(response.data['is_admin'])
 
         self.delete_fake_user()
 
@@ -96,8 +97,8 @@ class UserTests(APITestCase):
 
     def test_post_with_repeated_unique_attributes__should_return_BAD_REQUEST(self):
         self.post_fake_user()
-        response = self.client.post(f'{BASE_URL}/users', data=self.fake_user_data)
 
+        response = self.client.post(f'{BASE_URL}/users', data=self.fake_user_data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
         self.delete_fake_user()
@@ -109,7 +110,8 @@ class UserTests(APITestCase):
 
         response = self.client.post(f'{BASE_URL}/users', admin_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['is_admin'], True)
+        self.assertIn('is_admin', response.data)
+        self.assertTrue(response.data['is_admin'])
         self.delete_fake_user('admin-user')
 
     def test_login_on_happy_path__should_return_OK(self):
