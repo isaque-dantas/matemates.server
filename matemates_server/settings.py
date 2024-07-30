@@ -85,7 +85,7 @@ AUTH_USER_MODEL = 'api.User'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'matemates_db',
+        'NAME': 'matemates_db_api',
         'USER': 'dba_matemates',
         'PASSWORD': 'Box7ufe4SH83NJvGzkgVxKg3',
         'HOST': '127.0.0.1',

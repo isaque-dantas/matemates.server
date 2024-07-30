@@ -1,0 +1,5 @@
+### GET request to example server
+GET http://localhost:8000/api/users
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzIyMzQyOTI1LCJpYXQiOjE3MjIzNDI2MjUsImp0aSI6ImU5OWQ1NzJmOWNjZjRmMjhhYjUyOTU2OThkZGQ0OTczIiwidXNlcl9pZCI6MX0.VNfYy97xPNdZFKZOGMaD1VnsoxWdqEE7wWXFdkF0XVo
+
+###
