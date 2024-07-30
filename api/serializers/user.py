@@ -63,8 +63,3 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         if User.objects.exclude(pk=user_id).filter(username=value).exists():
             raise serializers.ValidationError(f'user with username {value} already exists.')
         return value
-
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation.pop('password', None)
-        return representation
