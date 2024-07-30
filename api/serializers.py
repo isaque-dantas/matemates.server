@@ -47,16 +47,18 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         return instance
 
     def validate_email(self, value):
-        if self.Meta.model.objects.filter(email=value).exists():
+        user_id = self.instance.id
+        if User.objects.exclude(pk=user_id).filter(email=value).exists():
             raise serializers.ValidationError(f'user with email {value} already exists.')
         return value
 
     def validate_username(self, value):
-        if self.Meta.model.objects.filter(username=value).exists():
+        user_id = self.instance.id
+        if User.objects.exclude(pk=user_id).filter(username=value).exists():
             raise serializers.ValidationError(f'user with username {value} already exists.')
         return value
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['password'] = ''
+        representation.pop('password', None)
         return representation

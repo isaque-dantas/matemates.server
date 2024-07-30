@@ -60,15 +60,18 @@ class UserTests(APITestCase):
     def does_fake_user_exist(self):
         return User.objects.filter(username=self.fake_user_data['username']).exists()
 
-    def post_fake_user(self):
-        serializer = UserSerializer(data=self.fake_user_data)
+    def post_fake_user(self, data: dict = None):
+        data = data or self.fake_user_data
+
+        serializer = UserSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.create(serializer.validated_data)
 
         self._credentials_header = None
 
-    def delete_fake_user(self):
-        user = User.objects.get(username=self.fake_user_data["username"])
+    def delete_fake_user(self, username_to_delete: str = None):
+        username_to_delete = username_to_delete or self.fake_user_data['username']
+        user = User.objects.get(username=username_to_delete)
         user.delete()
 
     def test_post_on_happy_path__should_return_OK(self):
@@ -130,16 +133,31 @@ class UserTests(APITestCase):
 
         response = self.client.put(f'{BASE_URL}/users', edited_data, headers=self.credentials)
 
-        if response.status_code == status.HTTP_400_BAD_REQUEST:
-            print()
-            print('test_put_on_happy_path__should_return_NO_CONTENT; ', edited_data)
-            print(response.data)
-            print()
-
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
         response = self.client.get(f'{BASE_URL}/users', headers=self.credentials)
         self.assertEqual(response.data['username'], edited_data['username'])
+
+    def test_put_with_username_from_another_entity__should_return_BAD_REQUEST(self):
+        self.post_fake_user({
+            'first_name': "Another",
+            'last_name': "User",
+            'username': "another-user",
+            'password': "password",
+            'email': "another.user@email.com",
+        })
+
+        edited_data = self.fake_user_data.copy()
+        edited_data['username'] = 'another-user'
+
+        response = self.client.put(f'{BASE_URL}/users', edited_data, headers=self.credentials)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        response = self.client.get(f'{BASE_URL}/users', headers=self.credentials)
+        self.assertNotEqual(response.data['username'], edited_data['username'])
+
+        self.delete_fake_user("another-user")
 
     def test_delete_on_happy_path__should_return_NO_CONTENT(self):
         response = self.client.delete(f'{BASE_URL}/users', headers=self.credentials)

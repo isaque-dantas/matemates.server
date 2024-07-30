@@ -33,7 +33,7 @@ class UserView(APIView):
     @action(detail=True, methods=['PUT'])
     def put(self, request):
         if request.user.is_authenticated:
-            serializer = UserUpdateSerializer(data=request.data)
+            serializer = UserUpdateSerializer(request.user, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.update(request.user, serializer.validated_data)
                 return Response(status=status.HTTP_204_NO_CONTENT)
