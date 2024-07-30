@@ -78,6 +78,7 @@ REST_FRAMEWORK = {
 }
 
 AUTH_USER_MODEL = 'api.User'
+ADMIN_EMAIL = 'matemates.api.admin@gmail.com'
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases

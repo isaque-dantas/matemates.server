@@ -6,9 +6,7 @@ from . import views
 
 urlpatterns = [
     path('hello-world', views.hello_world),
-    # path('users', views.UserCreateView.as_view()),
     path('users', views.UserView.as_view()),
-    # path('users', views.UserView.as_view()),
     path('token', TokenObtainPairView.as_view()),
     path('token/refresh', TokenRefreshView.as_view()),
 ]

@@ -4,6 +4,7 @@ from rest_framework.test import APITestCase
 
 from api.models import User
 from api.serializers import UserSerializer
+from matemates_server import settings
 
 BASE_URL = "http://127.0.0.1:8000/api"
 
@@ -101,6 +102,16 @@ class UserTests(APITestCase):
 
         self.delete_fake_user()
 
+    def test_post_with_admin_email__should_return_CREATED(self):
+        admin_data = self.fake_user_data.copy()
+        admin_data['username'] = 'admin-user'
+        admin_data['email'] = settings.ADMIN_EMAIL
+
+        response = self.client.post(f'{BASE_URL}/users', admin_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['is_admin'], True)
+        self.delete_fake_user('admin-user')
+
     def test_login_on_happy_path__should_return_OK(self):
         if not self.does_fake_user_exist():
             self.post_fake_user()
@@ -122,6 +133,7 @@ class UserTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('email', response.data)
         self.assertIn('username', response.data)
+        self.assertIn('is_admin', response.data)
         self.assertNotIn('password', response.data)
 
         self.assertEqual(response.data['username'], self.fake_user_data['username'])

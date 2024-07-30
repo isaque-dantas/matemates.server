@@ -1,17 +1,21 @@
 from rest_framework import serializers
 
 from api.models import User
+from matemates_server import settings
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'username', 'email', 'password']
+        fields = ['first_name', 'last_name', 'username', 'email', 'password', 'is_admin']
         REQUIRED_FIELDS = ['username', 'email', 'first_name', 'last_name']
 
     def create(self, validated_data):
         password = validated_data.pop('password', None)
         instance = self.Meta.model(**validated_data)
+
+        if validated_data['email'] == settings.ADMIN_EMAIL:
+            instance.is_admin = True
 
         instance.is_active = True
         if password is not None:
