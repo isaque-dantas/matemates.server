@@ -3,7 +3,7 @@ from rest_framework.decorators import api_view, action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from api.serializers.serializers import UserSerializer, UserUpdateSerializer
+from api.serializers.user import UserSerializer, UserUpdateSerializer
 
 
 @api_view()
@@ -28,6 +28,10 @@ class UserView(APIView):
             return Response(serializer.validated_data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['POST'])
+    def post_turn_another_user_admin(self):
+        pass
 
     @action(detail=True, methods=['PUT'])
     def put(self, request):

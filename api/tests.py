@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.test import APITestCase
 
 from api.models.user import User
-from api.serializers.serializers import UserSerializer
+from api.serializers.user import UserSerializer
 from matemates_server import settings
 
 BASE_URL = "http://127.0.0.1:8000/api"
@@ -14,8 +14,6 @@ class ConnectionTests(APITestCase):
         response = self.client.get(f'{BASE_URL}/hello-world')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-
-# self\.client\.get|self\.client\.put|self\.client\.post
 
 class UserTests(APITestCase):
     fake_user_data = {
@@ -38,14 +36,7 @@ class UserTests(APITestCase):
 
         response = self.client.post(f'{BASE_URL}/token', self.fake_user_login_data)
 
-        # if response.status_code != status.HTTP_200_OK:
-        #     print()
-        #     print('*** set_credentials ***')
-        #     print(response.data)
-        #     print()
-
         self._credentials_header = {"Authorization": f'Bearer {response.data["access"]}'}
-        # print(f'*** set credentials to {self._credentials_header} ***')
         return self._credentials_header
 
     @property
