@@ -35,6 +35,11 @@ class UserSerializer(serializers.ModelSerializer):
         representation.pop('password', None)
         return representation
 
+    def turn_admin(self, email):
+        instance = self.Meta.model.objects.get(email=email)
+        instance.is_admin = True
+        instance.save()
+
 
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:

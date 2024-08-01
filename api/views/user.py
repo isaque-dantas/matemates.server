@@ -11,6 +11,19 @@ def hello_world(request):
     return Response("Hello, world!")
 
 
+@api_view(['POST'])
+def turn_admin(request):
+    if request.user.is_authenticated:
+        if request.user.is_admin:
+            serializer = UserSerializer(request.user)
+            serializer.turn_admin(request.data['email'])
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+    else:
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+
 class UserView(APIView):
     @action(detail=True)
     def get(self, request):
@@ -28,10 +41,6 @@ class UserView(APIView):
             return Response(serializer.validated_data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    @action(detail=True, methods=['POST'])
-    def post_turn_another_user_admin(self):
-        pass
 
     @action(detail=True, methods=['PUT'])
     def put(self, request):
