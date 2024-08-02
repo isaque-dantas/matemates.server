@@ -35,6 +35,41 @@ class UserTestsUtils:
         common_user_data['username']: common_user_data
     }
 
+    def set_database_environment(self, environment: dict[str, bool] = None):
+        environment = environment or {'common-user': False, 'admin-user': False}
+        actions = {
+            True: lambda u: self._create_user_if_doesnt_exist(u),
+            False: lambda u: self._delete_user_if_exists(u),
+        }
+
+        for username, must_create in environment.items():
+            actions[must_create](username)
+
+    def retrieve_user(self, username: str = None) -> User:
+        username = username or self.common_user_data["username"]
+        return User.objects.get(username=username)
+
+    def _does_user_exist(self, username: str = None) -> bool:
+        username = username or self.common_user_data["username"]
+        return User.objects.filter(username=username).exists()
+
+    def _create_user_if_doesnt_exist(self, username: str):
+        if self._does_user_exist(username):
+            return None
+
+        serializer = UserSerializer(data=self._users_data[username])
+        serializer.is_valid(raise_exception=True)
+        serializer.create(serializer.validated_data)
+
+        self.get_credentials(username)
+
+    def _delete_user_if_exists(self, username: str):
+        if not self._does_user_exist(username):
+            return None
+
+        user = self.retrieve_user(username)
+        user.delete()
+
     @property
     def common_credentials(self):
         return self.get_credentials(self.common_user_data['username'])
@@ -44,15 +79,11 @@ class UserTestsUtils:
         return self.get_credentials(self.admin_user_data['username'])
 
     def get_credentials(self, username: str):
-        user_data = self._users_data[username]
-
         if self._credentials_headers[username]:
             return self._credentials_headers[username]
 
-        if not self.does_user_exist(username):
-            self.create_user(user_data)
-
-        response = self.client.post(f'{BASE_URL}/token', user_data)
+        login_data = self.common_user_login_data if username == 'common-user' else self.admin_user_login_data
+        response = self.client.post(f'{BASE_URL}/token', login_data)
 
         self._credentials_headers[username] = {"Authorization": f'Bearer {response.data["access"]}'}
         return self._credentials_headers[username]
@@ -64,31 +95,9 @@ class UserTestsUtils:
             "password": self.common_user_data["password"]
         }
 
-    def retrieve_user(self, username: str = None) -> User:
-        username = username or self.common_user_data["username"]
-        return User.objects.get(username=username)
-
-    def does_user_exist(self, username: str = None) -> bool:
-        username = username or self.common_user_data["username"]
-        return User.objects.filter(username=username).exists()
-
-    def create_user(self, data: dict = None):
-        if self.does_user_exist(data['username']):
-            return None
-
-        data = data or self.common_user_data
-
-        serializer = UserSerializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        serializer.create(serializer.validated_data)
-
-        self._credentials_headers[data['username']] = None
-
-    def delete_user(self, username: str = None):
-        if not self.does_user_exist(username):
-            return None
-
-        user = self.retrieve_user(username)
-        user.delete()
-
-        self._credentials_headers[username] = None
+    @property
+    def admin_user_login_data(self):
+        return {
+            "username": self.admin_user_data["username"],
+            "password": self.admin_user_data["password"]
+        }
