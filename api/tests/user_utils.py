@@ -42,6 +42,8 @@ class UserTestsUtils:
             False: lambda u: self._delete_user_if_exists(u),
         }
 
+        # self.refresh_tokens()
+
         for username, must_create in environment.items():
             actions[must_create](username)
 

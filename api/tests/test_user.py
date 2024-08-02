@@ -100,6 +100,8 @@ class UserTests(APITestCase):
         edited_user = self.utils.retrieve_user('common-user')
         self.assertEqual(edited_user.username, edited_data['username'])
 
+        self.utils.refresh_tokens()
+
     def test_put_with_username_from_another_user__should_return_BAD_REQUEST(self):
         self.utils.set_database_environment({'admin-user': True, 'common-user': True})
 
@@ -117,9 +119,13 @@ class UserTests(APITestCase):
         response = self.client.delete(f'{BASE_URL}/users', headers=self.utils.common_credentials)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
+        self.utils.refresh_tokens()
+
     def test_delete_without_credentials__should_return_UNAUTHORIZED(self):
         response = self.client.delete(f'{BASE_URL}/users')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        self.utils.refresh_tokens()
 
     def test_turn_other_user_admin__should_return_OK(self):
         self.utils.set_database_environment({'admin-user': True, 'common-user': True})
