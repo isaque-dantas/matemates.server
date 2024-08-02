@@ -61,8 +61,6 @@ class UserTestsUtils:
         serializer.is_valid(raise_exception=True)
         serializer.create(serializer.validated_data)
 
-        self.get_credentials(username)
-
     def _delete_user_if_exists(self, username: str):
         if not self._does_user_exist(username):
             return None
@@ -87,6 +85,10 @@ class UserTestsUtils:
 
         self._credentials_headers[username] = {"Authorization": f'Bearer {response.data["access"]}'}
         return self._credentials_headers[username]
+
+    def refresh_tokens(self):
+        self._credentials_headers['admin-user'] = None
+        self._credentials_headers['common-user'] = None
 
     @property
     def common_user_login_data(self):

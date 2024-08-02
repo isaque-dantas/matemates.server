@@ -1,4 +1,7 @@
+from rest_framework import status
 from rest_framework.test import APITestCase
+
+from . import BASE_URL
 from .user_utils import UserTestsUtils
 
 
@@ -25,3 +28,6 @@ class UserUtilsTests(APITestCase):
 
         header_token = self.utils.common_credentials
         self.assertIn('Authorization', header_token)
+
+        # response = self.client.get(f"{BASE_URL}/users", headers=self.utils.common_credentials)
+        # self.assertEqual(response.status_code, status.HTTP_200_OK)

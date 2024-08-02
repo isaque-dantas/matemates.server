@@ -24,6 +24,8 @@ class UserTests(APITestCase):
         self.assertNotIn('password', response.data)
         self.assertFalse(response.data['is_admin'])
 
+        self.utils.refresh_tokens()
+
     def test_post_with_non_existent_field__should_return_CREATED(self):
         self.utils.set_database_environment({'common-user': False})
 
@@ -34,11 +36,15 @@ class UserTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertNotIn('non_existent_field', response.data)
 
+        self.utils.refresh_tokens()
+
     def test_post_with_repeated_unique_attributes__should_return_BAD_REQUEST(self):
         self.utils.set_database_environment({'common-user': True})
 
         response = self.client.post(f'{BASE_URL}/users', data=self.utils.common_user_data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        self.utils.refresh_tokens()
 
     def test_post_with_admin_email__should_return_CREATED(self):
         self.utils.set_database_environment({'admin-user': False})
@@ -51,6 +57,8 @@ class UserTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIn('is_admin', response.data)
         self.assertTrue(response.data['is_admin'])
+
+        self.utils.refresh_tokens()
 
     def test_login_on_happy_path__should_return_OK(self):
         self.utils.set_database_environment({'common-user': True})
@@ -100,7 +108,7 @@ class UserTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-        user = self.utils.retrieve_user(self.utils.common_user_data)
+        user = self.utils.retrieve_user(self.utils.common_user_data['username'])
         self.assertNotEqual(user.username, self.utils.admin_user_data['username'])
 
     def test_delete_on_happy_path__should_return_NO_CONTENT(self):

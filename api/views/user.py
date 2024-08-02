@@ -31,6 +31,12 @@ class UserView(APIView):
             serializer = UserSerializer(request.user)
             return Response(serializer.data)
         else:
+            print(request.user)
+            print(request.user)
+            print(request.user)
+            print(request.user)
+            print(request.user)
+            print(request.user)
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     @action(detail=True, methods=['POST'])
