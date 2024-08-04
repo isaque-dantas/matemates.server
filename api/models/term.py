@@ -15,9 +15,8 @@ class Term(models.Model):
         NUMERAL = 'numeral'
 
     content = models.CharField(max_length=64, blank=False, unique=True)
-    gender = models.CharField(max_length=16, blank=False, choices=Gender)
-    grammatical_category = models.CharField(max_length=16, blank=False, choices=GrammaticalCategory,
-                                            default=GrammaticalCategory.SUBSTANTIVE)
+    gender = models.CharField(max_length=16, default=None, blank=False, choices=Gender)
+    grammatical_category = models.CharField(max_length=16, blank=False, choices=GrammaticalCategory, default=None)
     is_main_term = models.BooleanField(default=False, blank=False)
     order = models.IntegerField(blank=False)
 

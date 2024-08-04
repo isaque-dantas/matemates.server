@@ -1,10 +1,9 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from api.models.user import User
 from matemates_server import settings
-from ..tests import BASE_URL
-from .user_utils import UserTestsUtils
+from api.tests.user_utils import UserTestsUtils
+from api.tests import BASE_URL
 
 
 class UserTests(APITestCase):
@@ -14,11 +13,6 @@ class UserTests(APITestCase):
         self.utils.set_database_environment({'common-user': False})
 
         response = self.client.post(f'{BASE_URL}/users', data=self.utils.common_user_data)
-
-        if response.status_code == status.HTTP_400_BAD_REQUEST:
-            print()
-            print('test_post_on_happy_path__should_return_OK; ', response.data)
-            print()
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertNotIn('password', response.data)
@@ -139,4 +133,3 @@ class UserTests(APITestCase):
 
         admin = self.utils.retrieve_user('admin-user')
         self.assertTrue(admin.is_admin)
-
