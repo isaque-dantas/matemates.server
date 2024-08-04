@@ -1,18 +1,20 @@
 from api.models.entry import Entry
 
 
+# TODO: add some knowledge areas by default in the constructor method (__init__)
+
 class EntryUtils:
     right_angle_entry_data = {
         "content": "*ân.gu.lo* re.to",
         "main_term_gender": "M",
         "main_term_grammatical_category": "substantivo",
         "definitions": [
-            {"content": "Ângulo cuja medida é de 90°.", "order": 0, "knowledge_area__content": "álgebra"},
-            {"content": "Alguma outra definição.", "order": 1, "knowledge_area__content": "estatística"},
+            {"content": "Ângulo cuja medida é de 90°.", "knowledge_area__content": "álgebra"},
+            {"content": "Alguma outra definição.", "knowledge_area__content": "estatística"},
         ],
         "images": [],
         "questions": [
-            {"statement": "Um quadrado tem ângulos retos?", "order": 0, "answer": "Sim.", "explanation": "Porque sim."},
+            {"statement": "Um quadrado tem ângulos retos?", "answer": "Sim.", "explanation": "Porque sim."},
         ],
     }
 
@@ -21,14 +23,13 @@ class EntryUtils:
         "main_term_gender": "F",
         "main_term_grammatical_category": "substantivo",
         "definitions": [
-            {"content": "Dispositivo eletrônico usado para efetuar cálculos matemáticos.", "order": 0,
+            {"content": "Dispositivo eletrônico usado para efetuar cálculos matemáticos.",
              "knowledge_area__content": "álgebra"},
-            {"content": "Um homem, uma máquina, um fantástico espetáculo.", "order": 1,
-             "knowledge_area__content": "estatística"},
+            {"content": "Um homem, uma máquina, um fantástico espetáculo.", "knowledge_area__content": "estatística"},
         ],
         "images": [],
         "questions": [
-            {"statement": "Quantas galinhas um ovo consegue pôr?", "order": 0,
+            {"statement": "Quantas galinhas um ovo consegue pôr?",
              "answer": "Aproximadamente o que uma calculadora pode computar.", "explanation": "Porque sim."},
         ],
     }

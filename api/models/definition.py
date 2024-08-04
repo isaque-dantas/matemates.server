@@ -1,6 +1,6 @@
 from django.db import models
 
-from .entry import Entry
+from api.models.entry import Entry
 from .knowledge_area import KnowledgeArea
 
 

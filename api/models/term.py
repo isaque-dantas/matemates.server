@@ -1,6 +1,6 @@
 from django.db import models
 
-from .entry import Entry
+from api.models.entry import Entry
 
 
 class Term(models.Model):

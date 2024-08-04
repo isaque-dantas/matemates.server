@@ -1,5 +1,5 @@
 from .definition import Definition
-from .entry import Entry
+from api.models.entry import Entry
 from .image import Image
 from .invited_email import InvitedEmail
 from .knowledge_area import KnowledgeArea

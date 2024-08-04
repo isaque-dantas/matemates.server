@@ -1,10 +1,12 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from matemates_server import settings
-from api.tests.user_utils import UserTestsUtils
 from api.tests import BASE_URL
+from api.tests.user_utils import UserTestsUtils
+from matemates_server import settings
 
+
+# TODO: add Invited Email instance to database when a user is invited to be admin
 
 class UserTests(APITestCase):
     utils = UserTestsUtils()
