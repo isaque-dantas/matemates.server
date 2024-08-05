@@ -47,4 +47,4 @@ class EntryTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-        # TODO: definition with non-existent knowledge_area that matches knowledge_area__content
+        # TODO: build test case where definition with non-existent knowledge_area that matches knowledge_area__content

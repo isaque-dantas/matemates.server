@@ -1,4 +1,5 @@
 from api.models.entry import Entry
+from api.models.knowledge_area import KnowledgeAreaManager
 
 
 # TODO: add some knowledge areas by default in the constructor method (__init__)
@@ -33,6 +34,19 @@ class EntryUtils:
              "answer": "Aproximadamente o que uma calculadora pode computar.", "explanation": "Porque sim."},
         ],
     }
+
+    def __init__(self):
+        knowledge_areas = [
+            {"content": "estatística", "subject": "matemática"},
+            {"content": "álgebra", "subject": "matemática"},
+            {"content": "cálculo", "subject": "matemática"},
+            {"content": "cinemática", "subject": "física"},
+        ]
+
+        manager = KnowledgeAreaManager()
+
+        for knowledge_area in knowledge_areas:
+            manager.create(**knowledge_area)
 
     def set_database_environment(self, environment: dict[str, bool]):
         environment = environment or {'angulo_reto': False, 'calculadora': False}

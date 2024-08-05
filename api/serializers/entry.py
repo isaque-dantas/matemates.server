@@ -10,3 +10,4 @@ class EntrySerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         instance = self.Meta.model.objects.create(**validated_data)
+        return instance

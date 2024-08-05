@@ -20,8 +20,8 @@ class EntryView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer.create(serializer.validated_data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        entry = serializer.create(serializer.validated_data)
+        return Response(entry, status=status.HTTP_201_CREATED)
 
     def put(self, request):
         raise NotImplementedError()

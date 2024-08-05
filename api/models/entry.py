@@ -12,6 +12,7 @@ class EntryManager(models.Manager):
         entry.save()
         self.save_terms(entry, kwargs['main_term_gender'], kwargs['main_term_grammatical_category'])
         self.save_definitions(entry, kwargs['definitions'])
+        self.save_questions(entry, kwargs['questions'])
 
     @staticmethod
     def parse_content(content: str):
@@ -70,6 +71,7 @@ class EntryManager(models.Manager):
 
             question = Question(**question_data)
             question.entry = entry
+            question.save()
 
 
 class Entry(models.Model):
