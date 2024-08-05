@@ -1,7 +1,7 @@
 from django.db import models
 
-import api
-from api.models import Syllable, Term, Definition, KnowledgeArea, Question
+# import api
+import api.models
 
 
 # TODO: refactor "save.*" methods to models.Manager inherited classes of each database entity
@@ -14,11 +14,13 @@ class EntryManager(models.Manager):
         self.save_definitions(entry, kwargs['definitions'])
         self.save_questions(entry, kwargs['questions'])
 
+        print('created entry:', entry.__repr__())
+
     @staticmethod
     def parse_content(content: str):
         return content.replace("*", "").replace(" ", "_").replace(".", "")
 
-    def save_terms(self, entry, main_term_gender: str, main_term_grammatical_category: str) -> list[Term]:
+    def save_terms(self, entry, main_term_gender: str, main_term_grammatical_category: str):
         for i, term_content in enumerate(entry.content.split(" ")):
             term_data = dict()
             term_data.update({"content": self.parse_content(term_content)})
@@ -36,40 +38,34 @@ class EntryManager(models.Manager):
 
             self.save_syllables(term, term_content)
 
-    def save_syllables(self, term: api.models.Term, term_content: str):
-        for i, syllable_content in enumerate(term_content.split(".")):
-            syllable_data = dict()
-            syllable_data.update({"content": self.parse_content(syllable_content)})
-            syllable_data.update({"order": i})
 
-            syllable = Syllable(**syllable_data)
-            syllable.term = term
-            syllable.save()
 
     @staticmethod
-    def save_definitions(entry: api.models.Entry, definitions: list[dict]):
+    def save_definitions(entry, definitions: list[dict]):
         for i, definition_incoming_data in enumerate(definitions):
             definition_data = dict()
             definition_data.update({"content": definition_incoming_data["content"]})
             definition_data.update({"order": i})
 
-            definition = Definition(**definition_data)
+            definition = api.models.Definition(**definition_data)
             definition.entry = entry
 
-            knowledge_area = KnowledgeArea.objects.get(content=definition_incoming_data["knowledge_area__content"])
+            knowledge_area = api.models.KnowledgeArea.objects.get(
+                content=definition_incoming_data["knowledge_area__content"])
             definition.knowledge_area = knowledge_area
 
             definition.save()
 
     @staticmethod
-    def save_questions(entry: api.models.Entry, questions: list[dict]):
+    def save_questions(entry, questions: list[dict]):
         for i, question in enumerate(questions):
             question_data = dict()
             question_data.update({"statement": question["statement"]})
             question_data.update({"answer": question["answer"]})
             question_data.update({"explanation": question["explanation"]})
+            question_data.update({"order": i})
 
-            question = Question(**question_data)
+            question = api.models.Question(**question_data)
             question.entry = entry
             question.save()
 
@@ -78,4 +74,7 @@ class Entry(models.Model):
     content = models.CharField(max_length=128, blank=False, unique=True)
     is_validated = models.BooleanField(default=False, blank=False)
 
-    objects = models.Manager()
+    objects = EntryManager()
+
+    def __repr__(self):
+        return f'<Entry {self.content}>'

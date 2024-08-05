@@ -1,11 +1,9 @@
-from rest_framework import status
 from rest_framework.test import APITestCase
 
-from . import BASE_URL
 from .user_utils import UserTestsUtils
 
 
-class UserUtilsTests(APITestCase):
+class UserUtils(APITestCase):
     utils = UserTestsUtils()
 
     def test_retrieve_user__should_be_equal_to_data_dictionary(self):

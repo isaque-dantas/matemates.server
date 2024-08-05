@@ -1,14 +1,18 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from api.models import Entry
+from api.models.entry import EntryManager
 from api.tests import BASE_URL
 from api.tests.entry_utils import EntryUtils
+from api.tests.knowledge_area_utils import KnowledgeAreaUtils
 from api.tests.user_utils import UserTestsUtils
 
 
 class EntryTests(APITestCase):
     user_utils = UserTestsUtils()
     entry_utils = EntryUtils()
+    knowledge_area_utils = KnowledgeAreaUtils()
 
     def test_post_on_happy_path__should_return_CREATED(self):
         self.user_utils.set_database_environment({"admin-user": True})
@@ -23,8 +27,16 @@ class EntryTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(self.entry_utils.exists("calculadora"))
 
+    def test_parse_content__should_return_parsed(self):
+        parsed = EntryManager.parse_content("*ân.gu.lo* re.to")
+        self.assertEqual(parsed, "ângulo_reto")
+
+        parsed = EntryManager.parse_content("cal.cu.la.do.ra")
+        self.assertEqual(parsed, "calculadora")
+
     def test_post_with_duplicated_content__should_return_BAD_REQUEST(self):
         self.user_utils.set_database_environment({"admin-user": True})
+        self.knowledge_area_utils.create_all()
         self.entry_utils.set_database_environment({"calculadora": True})
 
         response = self.client.post(
@@ -37,6 +49,7 @@ class EntryTests(APITestCase):
 
     def test_post_with_common_credentials__should_return_FORBIDDEN(self):
         self.user_utils.set_database_environment({"common-user": True})
+        self.knowledge_area_utils.create_all()
         self.entry_utils.set_database_environment({"calculadora": True})
 
         response = self.client.post(

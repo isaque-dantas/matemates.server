@@ -1,5 +1,4 @@
 from api.models.entry import Entry
-from api.models.knowledge_area import KnowledgeAreaManager
 
 
 # TODO: add some knowledge areas by default in the constructor method (__init__)
@@ -35,24 +34,11 @@ class EntryUtils:
         ],
     }
 
-    def __init__(self):
-        knowledge_areas = [
-            {"content": "estatística", "subject": "matemática"},
-            {"content": "álgebra", "subject": "matemática"},
-            {"content": "cálculo", "subject": "matemática"},
-            {"content": "cinemática", "subject": "física"},
-        ]
-
-        manager = KnowledgeAreaManager()
-
-        for knowledge_area in knowledge_areas:
-            manager.create(**knowledge_area)
-
     def set_database_environment(self, environment: dict[str, bool]):
         environment = environment or {'angulo_reto': False, 'calculadora': False}
         actions = {
-            True: lambda u: self.create(u),
-            False: lambda u: self.delete(u),
+            True: lambda e: self.create(e),
+            False: lambda e: self.delete(e),
         }
 
         for content, must_create in environment.items():
@@ -71,7 +57,7 @@ class EntryUtils:
         if self.exists(content):
             return None
 
-        Entry.objects.create(content=content)
+        Entry.objects.create(**self._get_data_by_content(content))
 
     def delete(self, content: str):
         content = self.parse_content(content)
@@ -83,3 +69,9 @@ class EntryUtils:
     @staticmethod
     def parse_content(content: str) -> str:
         return content.replace("*", "").replace(".", "").replace(" ", "_")
+
+    def _get_data_by_content(self, content: str):
+        if content == 'calculadora':
+            return self.calculator_entry_data
+        elif content == 'ângulo_reto':
+            return self.right_angle_entry_data

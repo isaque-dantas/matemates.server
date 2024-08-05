@@ -1,8 +1,9 @@
 from rest_framework.test import APIClient
+
+import api.models
+from api.serializers.user import UserSerializer
+from api.tests import BASE_URL
 from matemates_server import settings
-from api.models import User
-from ..serializers.user import UserSerializer
-from ..tests import BASE_URL
 
 
 class UserTestsUtils:
@@ -47,13 +48,13 @@ class UserTestsUtils:
         for username, must_create in environment.items():
             actions[must_create](username)
 
-    def retrieve_user(self, username: str = None) -> User:
+    def retrieve_user(self, username: str = None) -> api.models.User:
         username = username or self.common_user_data["username"]
-        return User.objects.get(username=username)
+        return api.models.User.objects.get(username=username)
 
     def _does_user_exist(self, username: str = None) -> bool:
         username = username or self.common_user_data["username"]
-        return User.objects.filter(username=username).exists()
+        return api.models.User.objects.filter(username=username).exists()
 
     def _create_user_if_doesnt_exist(self, username: str):
         if self._does_user_exist(username):

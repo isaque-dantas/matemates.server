@@ -1,4 +1,4 @@
-from .definition import Definition
+from api.models.definition import Definition
 from api.models.entry import Entry
 from api.models.image import Image
 from api.models.invited_email import InvitedEmail
