@@ -9,4 +9,4 @@ class QuestionSerializer(Serializer):
         fields = '__all__'
 
     def create(self, validated_data):
-        pass
+        self.Meta.model.objects.create_all(validated_data['questions'])

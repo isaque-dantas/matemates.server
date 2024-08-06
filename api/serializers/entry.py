@@ -3,7 +3,6 @@ from rest_framework import serializers
 import api.models
 from api.serializers.definition import DefinitionSerializer
 from api.serializers.question import QuestionSerializer
-from api.serializers.syllable import SyllableSerializer
 from api.serializers.term import TermSerializer
 
 
@@ -14,7 +13,6 @@ class EntrySerializer(serializers.ModelSerializer):
 
     def create(self, validated_data: dict):
         associated_serializers = [
-            SyllableSerializer,
             TermSerializer,
             QuestionSerializer,
             DefinitionSerializer
