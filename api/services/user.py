@@ -1,10 +1,17 @@
-from api.models import User
+from api.models import User, InvitedEmail
 from api.services.image import ImageService
+from matemates_server import settings
 
 
 class UserService:
     @staticmethod
     def create(validated_data):
+        validated_data['is_admin'] = (
+                validated_data['email'] == settings.ADMIN_EMAIL
+                or
+                InvitedEmail.objects.filter(email=validated_data['email']).exists()
+        )
+
         return User.objects.create_user(**validated_data)
 
     @staticmethod
@@ -30,7 +37,12 @@ class UserService:
         instance.save()
 
     @staticmethod
-    def turn_admin(email):
-        instance = User.objects.get(email=email)
-        instance.is_admin = True
-        instance.save()
+    def turn_admin(email: str, user_who_invited: User):
+        if User.objects.filter(email=email).exists():
+            instance = User.objects.get(email=email)
+            instance.is_admin = True
+            instance.save()
+            return instance
+
+        invited_email = InvitedEmail(email=email, user_who_invited=user_who_invited)
+        invited_email.save()

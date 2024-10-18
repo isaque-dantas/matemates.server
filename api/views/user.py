@@ -21,8 +21,8 @@ def turn_admin(request):
     if not request.user.is_admin:
         return Response(status=status.HTTP_403_FORBIDDEN)
 
-    serializer = UserSerializer(request.user)
-    serializer.turn_admin(request.data['email'])
+    user_who_invited = request.user
+    UserService.turn_admin(request.data['email'], user_who_invited)
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -65,6 +65,5 @@ class UserView(APIView):
         if not request.user.is_authenticated:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-        serializer = UserSerializer(request.user)
-        serializer.inactivate_user(request.user.username)
+        UserService.inactivate_user(request.user.username)
         return Response(status=status.HTTP_204_NO_CONTENT)

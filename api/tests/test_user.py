@@ -2,6 +2,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from api import log
+from api.models import InvitedEmail
 from api.tests import BASE_URL
 from api.tests.user_utils import UserTestsUtils
 from matemates_server import settings
@@ -126,7 +127,7 @@ class UserTests(APITestCase):
 
         self.utils.refresh_tokens()
 
-    def test_turn_other_user_admin__should_return_OK(self):
+    def test_turn_other_existent_user_admin__should_return_OK(self):
         self.utils.set_database_environment({'admin-user': True, 'common-user': True})
 
         response = self.client.post(
@@ -139,3 +140,16 @@ class UserTests(APITestCase):
 
         admin = self.utils.retrieve_user('admin-user')
         self.assertTrue(admin.is_admin)
+
+    def test_turn_other_non_existent_user_admin__should_return_OK(self):
+        self.utils.set_database_environment({'admin-user': True, 'common-user': False})
+
+        response = self.client.post(
+            f"{BASE_URL}/users/turn-admin",
+            data={"email": self.utils.common_user_data['email']},
+            headers=self.utils.admin_credentials
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        self.assertTrue(InvitedEmail.objects.filter(email=self.utils.common_user_data['email']).exists() )
