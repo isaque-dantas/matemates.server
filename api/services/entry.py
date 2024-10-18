@@ -30,9 +30,11 @@ class EntryService:
     @staticmethod
     def get(serializer):
         pass
+
     @staticmethod
     def update(serializer):
         pass
+
     @staticmethod
     def delete(serializer):
         pass

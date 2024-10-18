@@ -7,23 +7,10 @@ from matemates_server import settings
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'username', 'email', 'password', 'is_admin']
-        REQUIRED_FIELDS = ['username', 'email', 'first_name', 'last_name']
+        fields = ['name', 'username', 'email', 'password', 'is_admin', 'profile_image_base64_encoded_string']
+        REQUIRED_FIELDS = ['username', 'email', 'password']
 
-    def create(self, validated_data):
-        password = validated_data.pop('password', None)
-
-        validated_data.update(
-            {'is_admin': validated_data['email'] == settings.ADMIN_EMAIL}
-        )
-
-        instance = self.Meta.model(**validated_data)
-
-        instance.is_active = True
-        if password is not None:
-            instance.set_password(password)
-        instance.save()
-        return instance
+    profile_image_base64_encoded_string = serializers.CharField(required=False)
 
     def inactivate_user(self, username: str):
         instance = self.Meta.model.objects.get(username=username)
@@ -33,6 +20,7 @@ class UserSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation.pop('password', None)
+        representation.pop('profile_image_base64_encoded_string', None)
         return representation
 
     def turn_admin(self, email):
@@ -44,7 +32,7 @@ class UserSerializer(serializers.ModelSerializer):
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'username', 'email', 'password']
+        fields = ['name', 'last_name', 'username', 'email', 'password']
 
     def update(self, instance: User, validated_data):
         instance.username = validated_data['username']

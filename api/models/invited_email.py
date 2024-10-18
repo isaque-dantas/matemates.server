@@ -1,6 +1,6 @@
 from django.db import models
 
-from .user import User
+from api.models.user import User
 
 
 class InvitedEmail(models.Model):

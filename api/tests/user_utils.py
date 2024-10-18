@@ -2,6 +2,7 @@ from rest_framework.test import APIClient
 
 import api.models
 from api.serializers.user import UserSerializer
+from api.services.user import UserService
 from api.tests import BASE_URL
 from matemates_server import settings
 
@@ -11,19 +12,19 @@ class UserTestsUtils:
         self.client = APIClient()
 
     common_user_data = {
-        "first_name": "Common",
-        "last_name": "User",
+        "name": "Common User",
         "email": "common-user@email.com",
         "password": "pass",
-        "username": "common-user"
+        "username": "common-user",
+        "profile_image_base64_encoded_string": "any-64-encoded"
     }
 
     admin_user_data = {
-        "first_name": "Admin",
-        "last_name": "User",
+        "name": "Admin User",
         "email": settings.ADMIN_EMAIL,
         "password": "pass",
-        "username": "admin-user"
+        "username": "admin-user",
+        "profile_image_base64_encoded_string": "any-64-encoded"
     }
 
     _credentials_headers = {
@@ -62,7 +63,7 @@ class UserTestsUtils:
 
         serializer = UserSerializer(data=self._users_data[username])
         serializer.is_valid(raise_exception=True)
-        serializer.create(serializer.validated_data)
+        UserService.create(serializer.validated_data)
 
     def _delete_user_if_exists(self, username: str):
         if not self._does_user_exist(username):

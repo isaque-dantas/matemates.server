@@ -1,6 +1,7 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from api import log
 from api.tests import BASE_URL
 from api.tests.user_utils import UserTestsUtils
 from matemates_server import settings
@@ -14,7 +15,7 @@ class UserTests(APITestCase):
     def test_post_on_happy_path__should_return_OK(self):
         self.utils.set_database_environment({'common-user': False})
 
-        response = self.client.post(f'{BASE_URL}/users', data=self.utils.common_user_data)
+        response = self.client.post(f'{BASE_URL}/users', data=self.utils.common_user_data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertNotIn('password', response.data)
@@ -60,6 +61,8 @@ class UserTests(APITestCase):
         self.utils.set_database_environment({'common-user': True})
 
         response = self.client.post(f'{BASE_URL}/token', self.utils.common_user_login_data)
+        log.debug(response.data)
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('access', response.data)
         self.assertIn('refresh', response.data)
@@ -87,14 +90,14 @@ class UserTests(APITestCase):
         self.utils.set_database_environment({'common-user': True})
 
         edited_data = self.utils.common_user_data.copy()
-        edited_data['first_name'] = 'Edited'
+        edited_data['name'] = 'Edited User'
 
         response = self.client.put(f'{BASE_URL}/users', edited_data, headers=self.utils.common_credentials)
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
         edited_user = self.utils.retrieve_user('common-user')
-        self.assertEqual(edited_user.username, edited_data['username'])
+        self.assertEqual(edited_user.name, edited_data['name'])
 
         self.utils.refresh_tokens()
 
