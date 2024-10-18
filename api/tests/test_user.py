@@ -132,7 +132,8 @@ class UserTests(APITestCase):
         response = self.client.post(
             f"{BASE_URL}/users/turn-admin",
             data={"email": self.utils.common_user_data['email']},
-            headers=self.utils.admin_credentials)
+            headers=self.utils.admin_credentials
+        )
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 

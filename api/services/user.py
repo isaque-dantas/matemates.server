@@ -1,6 +1,5 @@
 from api.models import User
 from api.services.image import ImageService
-from matemates_server import settings
 
 
 class UserService:
@@ -23,3 +22,15 @@ class UserService:
         instance.save()
 
         return instance
+
+    @staticmethod
+    def inactivate_user(username: str):
+        instance = User.objects.get(username=username)
+        instance.is_active = False
+        instance.save()
+
+    @staticmethod
+    def turn_admin(email):
+        instance = User.objects.get(email=email)
+        instance.is_admin = True
+        instance.save()

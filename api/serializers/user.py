@@ -12,21 +12,12 @@ class UserSerializer(serializers.ModelSerializer):
 
     profile_image_base64_encoded_string = serializers.CharField(required=False)
 
-    def inactivate_user(self, username: str):
-        instance = self.Meta.model.objects.get(username=username)
-        instance.is_active = False
-        instance.save()
-
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation.pop('password', None)
         representation.pop('profile_image_base64_encoded_string', None)
         return representation
 
-    def turn_admin(self, email):
-        instance = self.Meta.model.objects.get(email=email)
-        instance.is_admin = True
-        instance.save()
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
