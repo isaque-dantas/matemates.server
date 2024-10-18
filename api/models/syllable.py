@@ -1,10 +1,10 @@
 from django.db import models
 
-import api.models
+from api.models import Term
 
 
 class SyllableManager(models.Manager):
-    def get_syllables_data(self, term: api.models.Term, term_content: str):
+    def get_syllables_data(self, term, term_content: str):
         syllables_data = list()
 
         for i, syllable_content in enumerate(term_content.split(".")):
@@ -17,11 +17,8 @@ class SyllableManager(models.Manager):
 
         return syllables_data
 
-    @staticmethod
-    def create(validated_data):
-        syllable = api.models.Syllable(content=validated_data['content'], order=validated_data['order'])
-        syllable.term = validated_data['term']
-        syllable.save()
+    def create(self, syllables):
+        return self.bulk_create(syllables)
 
     @staticmethod
     def get_terms_contents_from_content(content):
@@ -34,8 +31,6 @@ class SyllableManager(models.Manager):
 
 class Syllable(models.Model):
     content = models.CharField(max_length=16, blank=False)
-    order = models.IntegerField(blank=False)
-
     term = models.ForeignKey(Term, on_delete=models.CASCADE)
 
     objects = SyllableManager()

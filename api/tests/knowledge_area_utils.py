@@ -9,13 +9,11 @@ class KnowledgeAreaUtils:
         {"content": "cinemática", "subject": "física"},
     ]
 
-    def __init__(self):
-        self.create_all()
-
-    def create_all(self):
+    @staticmethod
+    def create_all():
         print("create_all from knowledge_areas")
-        for knowledge_area in self.knowledge_areas:
-            if not self.exists(knowledge_area['content']):
+        for knowledge_area in KnowledgeAreaUtils.knowledge_areas:
+            if not KnowledgeAreaUtils.exists(knowledge_area['content']):
                 KnowledgeArea.objects.create(**knowledge_area)
 
     @staticmethod

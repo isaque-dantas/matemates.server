@@ -1,4 +1,5 @@
 from api.models.entry import Entry
+from api.tests.knowledge_area_utils import KnowledgeAreaUtils
 
 
 # TODO: add some knowledge areas by default in the constructor method (__init__)
@@ -12,7 +13,10 @@ class EntryUtils:
             {"content": "Ângulo cuja medida é de 90°.", "knowledge_area__content": "álgebra"},
             {"content": "Alguma outra definição.", "knowledge_area__content": "estatística"},
         ],
-        "images": [],
+        "images": [
+            {"caption": "ângulo reto na imagem", "base64_encoded_string": ""},
+            {"caption": "outro ângulo reto", "base64_encoded_string": ""},
+        ],
         "questions": [
             {"statement": "Um quadrado tem ângulos retos?", "answer": "Sim.", "explanation": "Porque sim."},
         ],
@@ -27,12 +31,18 @@ class EntryUtils:
              "knowledge_area__content": "álgebra"},
             {"content": "Um homem, uma máquina, um fantástico espetáculo.", "knowledge_area__content": "estatística"},
         ],
-        "images": [],
+        "images": [
+            {"caption": "ângulo reto na imagem", "base64_encoded_string": ""},
+            {"caption": "outro ângulo reto", "base64_encoded_string": ""},
+        ],
         "questions": [
             {"statement": "Quantas galinhas um ovo consegue pôr?",
              "answer": "Aproximadamente o que uma calculadora pode computar.", "explanation": "Porque sim."},
         ],
     }
+
+    def __init__(self):
+        KnowledgeAreaUtils.create_all()
 
     def set_database_environment(self, environment: dict[str, bool]):
         environment = environment or {'angulo_reto': False, 'calculadora': False}

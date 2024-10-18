@@ -12,7 +12,6 @@ from api.tests.user_utils import UserTestsUtils
 class EntryTests(APITestCase):
     user_utils = UserTestsUtils()
     entry_utils = EntryUtils()
-    knowledge_area_utils = KnowledgeAreaUtils()
 
     def test_post_on_happy_path__should_return_CREATED(self):
         self.user_utils.set_database_environment({"admin-user": True})
@@ -21,7 +20,8 @@ class EntryTests(APITestCase):
         response = self.client.post(
             f'{BASE_URL}/entry',
             self.entry_utils.calculator_entry_data,
-            headers=self.user_utils.admin_credentials
+            headers=self.user_utils.admin_credentials,
+            format='json'
         )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -36,26 +36,26 @@ class EntryTests(APITestCase):
 
     def test_post_with_duplicated_content__should_return_BAD_REQUEST(self):
         self.user_utils.set_database_environment({"admin-user": True})
-        self.knowledge_area_utils.create_all()
         self.entry_utils.set_database_environment({"calculadora": True})
 
         response = self.client.post(
             f'{BASE_URL}/entry',
             self.entry_utils.calculator_entry_data,
-            headers=self.user_utils.admin_credentials
+            headers=self.user_utils.admin_credentials,
+            format='json'
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_post_with_common_credentials__should_return_FORBIDDEN(self):
         self.user_utils.set_database_environment({"common-user": True})
-        self.knowledge_area_utils.create_all()
         self.entry_utils.set_database_environment({"calculadora": True})
 
         response = self.client.post(
             f'{BASE_URL}/entry',
             self.entry_utils.calculator_entry_data,
-            headers=self.user_utils.common_credentials
+            headers=self.user_utils.common_credentials,
+            format='json'
         )
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
