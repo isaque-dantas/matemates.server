@@ -11,10 +11,10 @@ class KnowledgeAreaUtils:
 
     @staticmethod
     def create_all():
-        print("create_all from knowledge_areas")
         for knowledge_area in KnowledgeAreaUtils.knowledge_areas:
             if not KnowledgeAreaUtils.exists(knowledge_area['content']):
-                KnowledgeArea.objects.create(**knowledge_area)
+                area = KnowledgeArea(**knowledge_area)
+                area.save()
 
     @staticmethod
     def exists(content: str):

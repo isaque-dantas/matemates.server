@@ -7,7 +7,7 @@ from matemates_server import settings
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['name', 'username', 'email', 'password', 'is_admin', 'profile_image_base64_encoded_string']
+        fields = ['name', 'username', 'email', 'password', 'is_staff', 'profile_image_base64_encoded_string']
         REQUIRED_FIELDS = ['username', 'email', 'password']
 
     profile_image_base64_encoded_string = serializers.CharField(required=False)

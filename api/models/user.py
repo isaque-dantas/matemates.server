@@ -18,11 +18,12 @@ class UserManager(BaseUserManager):
             username=validated_data['username'],
             name=validated_data['name'],
             profile_image_path=path,
-            is_admin=validated_data['is_admin'],
+            is_staff=validated_data['is_admin'],
         )
 
         user.set_password(validated_data['password'])
         user.is_active = True
+
         user.save()
 
         return user
@@ -42,7 +43,7 @@ class User(AbstractBaseUser):
     name = models.CharField(max_length=64, blank=False)
     email = models.EmailField(max_length=128, unique=True, blank=False)
     profile_image_path = models.CharField(max_length=128, blank=True)
-    is_admin = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False)
 
     objects = UserManager()
     USERNAME_FIELD = 'username'

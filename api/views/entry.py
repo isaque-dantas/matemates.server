@@ -1,21 +1,28 @@
+import logging
+
 from rest_framework import status
+from rest_framework.decorators import permission_classes
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from api.serializers.entry import EntrySerializer
 from api.services.entry import EntryService
-
+from api import log
 
 class EntryView(APIView):
     def get(self, request):
         raise NotImplementedError()
 
-    @staticmethod
-    def post(request):
+    # @permission_classes([IsAdminUser])
+    def post(self, request):
         if not request.user.is_authenticated:
-            return Response(status.HTTP_401_UNAUTHORIZED)
-        elif not request.user.is_admin:
-            return Response(status.HTTP_403_FORBIDDEN)
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        if not request.user.is_staff:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        log.debug(f'{request.user.is_staff=}')
 
         serializer = EntrySerializer(data=request.data)
 

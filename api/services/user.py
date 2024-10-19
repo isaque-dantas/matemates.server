@@ -40,7 +40,8 @@ class UserService:
     def turn_admin(email: str, user_who_invited: User):
         if User.objects.filter(email=email).exists():
             instance = User.objects.get(email=email)
-            instance.is_admin = True
+            instance.is_staff = True
+
             instance.save()
             return instance
 

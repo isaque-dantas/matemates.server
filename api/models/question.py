@@ -4,15 +4,8 @@ from api.models.entry import Entry
 
 
 class QuestionManager(models.Manager):
-    @staticmethod
-    def create(**kwargs):
-        question = Question(**kwargs)
-        question.save()
-
-    def create_all(self, questions_data: list):
-        for question_data in questions_data:
-            self.create(**question_data)
-
+    def create(self, questions):
+        return self.bulk_create(questions)
 
 class Question(models.Model):
     statement = models.CharField(max_length=256, blank=False)

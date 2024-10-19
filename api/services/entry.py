@@ -28,6 +28,10 @@ class EntryService:
         return content.replace("*", "").replace(".", "")
 
     @staticmethod
+    def is_content_invalid(content: str):
+        return Entry.objects.filter(content=EntryService.parse_content(content)).exists()
+
+    @staticmethod
     def get(serializer):
         pass
 
