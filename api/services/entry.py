@@ -44,6 +44,14 @@ class EntryService:
         return Entry.objects.get(pk=pk)
 
     @staticmethod
+    def get_all_related_to_knowledge_area(knowledge_area_content: str):
+        definitions = Definition.objects.filter(
+            knowledge_area__content=knowledge_area_content
+        ).select_related("entry")
+
+        return [definition.entry for definition in definitions]
+
+    @staticmethod
     def update(serializer):
         pass
 
@@ -62,11 +70,3 @@ class EntryService:
             "questions": instance.questions.all(),
             "definitions": instance.definition_set.all(),
         }
-
-    @staticmethod
-    def get_all_related_to_knowledge_area(knowledge_area_content: str):
-        definitions = Definition.objects.filter(
-            knowledge_area__content=knowledge_area_content
-        ).select_related("entry")
-
-        return [definition.entry for definition in definitions]
