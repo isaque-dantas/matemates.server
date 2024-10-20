@@ -12,5 +12,5 @@ class Question(models.Model):
     answer = models.CharField(max_length=256, blank=False)
     explanation = models.CharField(max_length=256, blank=True)
 
-    entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
+    entry = models.ForeignKey(Entry, on_delete=models.CASCADE, related_name="questions")
     objects = QuestionManager()

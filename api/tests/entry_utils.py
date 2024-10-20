@@ -14,7 +14,7 @@ class EntryUtils:
             "main_term_grammatical_category": "substantivo",
             "definitions": [
                 {"content": "Ângulo cuja medida é de 90°.", "knowledge_area__content": "álgebra"},
-                {"content": "Alguma outra definição.", "knowledge_area__content": "estatística"},
+                {"content": "Alguma outra definição.", "knowledge_area__content": "álgebra"},
             ],
             "images": [
                 {"caption": "ângulo reto na imagem", "base64_encoded_string": ""},
@@ -83,7 +83,7 @@ class EntryUtils:
         if self.exists(content):
             return None
 
-        serializer = EntrySerializer(data=self._get_data_by_content(content))
+        serializer = EntrySerializer(data=self.get_data(content))
         serializer.is_valid(raise_exception=True)
         EntryService.create(serializer)
 
@@ -97,9 +97,3 @@ class EntryUtils:
     @staticmethod
     def parse_content(content: str) -> str:
         return content.replace("*", "").replace(".", "").replace(" ", "_")
-
-    def _get_data_by_content(self, content: str):
-        if content == 'calculadora':
-            return self.calculator_entry_data
-        elif content == 'ângulo_reto':
-            return self.right_angle_entry_data

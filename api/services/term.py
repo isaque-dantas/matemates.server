@@ -8,12 +8,12 @@ class TermService:
         data_list = [
             {
                 'is_main_term': True,
-                'gender': entry_data['gender'],
+                'gender': entry_data['main_term_gender'],
                 'grammatical_category': entry_data['main_term_grammatical_category'],
                 'content': term_content.replace("*", "")
             }
 
-            if '*' in term_content else
+            if '*' in term_content or len(entry_data['content'].split()) == 1 else
 
             {
                 'is_main_term': False,

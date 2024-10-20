@@ -10,6 +10,7 @@ urlpatterns = [
     path('users', user.UserView.as_view()),
     path('users/turn-admin', user.turn_admin),
     path('entry', entry.EntryView.as_view()),
+    path('entry/<int:pk>', entry.SingleEntryView.as_view()),
     path('token', TokenObtainPairView.as_view()),
     path('token/refresh', TokenRefreshView.as_view()),
 ]

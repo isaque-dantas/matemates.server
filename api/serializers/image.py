@@ -15,3 +15,10 @@ class ImageSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         return attrs
+
+    def to_representation(self, instance):
+        return {
+            "id": instance.id,
+            "caption": instance.caption,
+            "path": instance.path,
+        }

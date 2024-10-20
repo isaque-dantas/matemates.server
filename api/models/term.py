@@ -34,6 +34,6 @@ class Term(models.Model):
     grammatical_category = models.CharField(max_length=16, blank=True, choices=GrammaticalCategory)
     is_main_term = models.BooleanField(default=False, blank=False)
 
-    entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
+    entry = models.ForeignKey(Entry, on_delete=models.CASCADE, related_name="terms")
 
     objects = TermManager()

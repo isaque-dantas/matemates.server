@@ -6,6 +6,7 @@ from api import log
 from api.serializers.definition import DefinitionSerializer
 from api.serializers.image import ImageSerializer
 from api.serializers.question import QuestionSerializer
+from api.serializers.term import TermSerializer
 from api.services.entry import EntryService
 
 
@@ -49,4 +50,16 @@ class EntrySerializer(serializers.ModelSerializer):
         return value
 
     def to_representation(self, instance):
-        return super().to_representation(instance)
+        representation = super().to_representation(instance)
+
+        if isinstance(instance, api.models.Entry):
+            related_entities = EntryService.get_related_entities(instance)
+
+            log.debug(f"\n{related_entities=}\n")
+
+            representation["terms"] = TermSerializer(related_entities["terms"], many=True).data
+            representation["definitions"] = DefinitionSerializer(related_entities["definitions"], many=True).data
+            representation["questions"] = QuestionSerializer(related_entities["questions"], many=True).data
+            representation["images"] = ImageSerializer(related_entities["images"], many=True).data
+
+        return representation

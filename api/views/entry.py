@@ -6,16 +6,27 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from api.models import Entry
 from api.serializers.entry import EntrySerializer
 from api.services.entry import EntryService
 from api import log
 
 class EntryView(APIView):
-    def get(self, request):
-        raise NotImplementedError()
+    @staticmethod
+    def get(request):
+        if request.query_params and "knowledge_area" in request.query_params:
+            entries = EntryService.get_all_related_to_knowledge_area(
+                request.query_params["knowledge_area"]
+            )
+        else:
+            entries = EntryService.get_all()
 
-    # @permission_classes([IsAdminUser])
-    def post(self, request):
+        serializer = EntrySerializer(entries, many=True)
+
+        return Response(serializer.data)
+
+    @staticmethod
+    def post(request):
         if not request.user.is_authenticated:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
@@ -33,6 +44,21 @@ class EntryView(APIView):
         serializer = EntrySerializer(entry)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+class SingleEntryView(APIView):
+    @staticmethod
+    def get(request, pk: int):
+        if not EntryService.exists(pk):
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        print('\n----------------\n\n'*3)
+        print("in SingleEntryView.get\n")
+
+        entry = EntryService.get(pk)
+        serializer = EntrySerializer(entry)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
     def put(self, request):
         raise NotImplementedError()

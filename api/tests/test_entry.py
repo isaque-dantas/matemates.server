@@ -76,8 +76,48 @@ class EntryTests(APITestCase):
             format='json'
         )
 
-        log.debug(f'{response.data=}')
+        # log.debug(f'{response.data=}')
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    # TODO: build test case where definition with non-existent knowledge_area that matches knowledge_area__content
+    def test_get_all__on_happy_path__should_return_OK(self):
+        self.user_utils.set_database_environment({"common-user": True})
+        self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
+
+        response = self.client.get(
+            f'{BASE_URL}/entry',
+            headers=self.user_utils.common_credentials,
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(len(response.data) == 2)
+
+    def test_get_single__on_happy_path__should_return_OK(self):
+        self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
+
+        calculadora_id = self.entry_utils.retrieve("calculadora").id
+        response = self.client.get(f'{BASE_URL}/entry/{calculadora_id}')
+
+        log.debug(f"{response.data=}")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.assertIn("terms", response.data)
+        self.assertIn("definitions", response.data)
+        self.assertIn("knowledge_area", response.data["definitions"][0])
+        self.assertIn("questions", response.data)
+        self.assertIn("images", response.data)
+
+    def test_get_all__from_specified_knowledge_area__should_return_OK(self):
+        self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
+
+        calculadora_id = self.entry_utils.retrieve("calculadora").id
+        response = self.client.get(
+            f'{BASE_URL}/entry?knowledge_area=estatística',
+        )
+
+        log.debug(f"{response.data=}")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["id"], calculadora_id)

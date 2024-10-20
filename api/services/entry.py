@@ -1,9 +1,9 @@
-from api.models import Entry
+from api.models import Entry, Definition
 from api.services.definition import DefinitionService
 from api.services.image import ImageService
 from api.services.question import QuestionService
 from api.services.term import TermService
-
+from api import log
 
 class EntryService:
     @staticmethod
@@ -32,8 +32,16 @@ class EntryService:
         return Entry.objects.filter(content=EntryService.parse_content(content)).exists()
 
     @staticmethod
-    def get(serializer):
-        pass
+    def exists(pk: int):
+        return Entry.objects.filter(pk=pk).exists()
+
+    @staticmethod
+    def get_all():
+        return Entry.objects.all()
+
+    @staticmethod
+    def get(pk: int):
+        return Entry.objects.get(pk=pk)
 
     @staticmethod
     def update(serializer):
@@ -42,3 +50,23 @@ class EntryService:
     @staticmethod
     def delete(serializer):
         pass
+
+    @staticmethod
+    def get_related_entities(instance: Entry):
+        all_definitions = Definition.objects.all()
+        log.debug(f"{all_definitions=}")
+
+        return {
+            "terms": instance.terms.all(),
+            "images": instance.images.all(),
+            "questions": instance.questions.all(),
+            "definitions": instance.definition_set.all(),
+        }
+
+    @staticmethod
+    def get_all_related_to_knowledge_area(knowledge_area_content: str):
+        definitions = Definition.objects.filter(
+            knowledge_area__content=knowledge_area_content
+        ).select_related("entry")
+
+        return [definition.entry for definition in definitions]

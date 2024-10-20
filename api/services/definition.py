@@ -44,9 +44,12 @@ class DefinitionService:
             else:
                 errors.append({})
 
-        log.debug(f'{errors=}')
+        filter_result = filter(lambda error: error != {}, errors)
 
-        if errors:
+        # log.debug(f'{errors=}')
+        # log.debug(f'{list(filter_result)=}')
+
+        if errors and list(filter(lambda error: error != {}, errors)) != []:
             raise ValidationError({'definitions': errors})
 
     @staticmethod
@@ -54,3 +57,6 @@ class DefinitionService:
         if not DefinitionService.does_knowledge_area_content_exist(value):
             raise ValidationError(f"KnowledgeArea content '{value}' does not exist in database")
 
+    @staticmethod
+    def get_all_related_data(entry_id: int):
+        pass
