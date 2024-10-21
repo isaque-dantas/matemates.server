@@ -108,10 +108,9 @@ class EntryTests(APITestCase):
         self.assertIn("questions", response.data)
         self.assertIn("images", response.data)
 
-    def test_get_all__from_specified_knowledge_area__should_return_OK(self):
+    def test_get_all_from_specified_knowledge_area__on_happy_path__should_return_OK(self):
         self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
 
-        calculadora_id = self.entry_utils.retrieve("calculadora").id
         response = self.client.get(
             f'{BASE_URL}/entry?knowledge_area=estatística',
         )
@@ -120,4 +119,23 @@ class EntryTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
+
+        calculadora_id = self.entry_utils.retrieve("calculadora").id
         self.assertEqual(response.data[0]["id"], calculadora_id)
+
+    def test_get_all_from_specified_knowledge_area__non_existent_knowledge_area__should_return_NOT_FOUND(self):
+        response = self.client.get(f'{BASE_URL}/entry?knowledge_area=non-existent-knowledge-area')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_put__on_happy_path__should_return_OK(self):
+        self.user_utils.set_database_environment({"admin-user": True})
+        self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
+
+        response = self.client.put(
+            f'{BASE_URL}/entry',
+            self.entry_utils.get_data("calculadora"),
+            headers=self.user_utils.common_credentials,
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
