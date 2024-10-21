@@ -10,7 +10,7 @@ class DefinitionManager(models.Manager):
 class Definition(models.Model):
     content = models.CharField(max_length=256, blank=False)
 
-    entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
+    entry = models.ForeignKey(Entry, on_delete=models.CASCADE, related_name='definitions')
     knowledge_area = models.ForeignKey(KnowledgeArea, on_delete=models.CASCADE, related_name='definitions')
 
     objects = DefinitionManager()

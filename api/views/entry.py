@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from api import log
+from api.models import Entry
 from api.serializers.entry import EntrySerializer
 from api.services.entry import EntryService
 from api.services.knowledge_area import KnowledgeAreaService
@@ -60,8 +61,30 @@ class SingleEntryView(APIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def put(self, request):
-        raise NotImplementedError()
+    @staticmethod
+    def put(request, pk):
+        if not EntryService.exists(pk):
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
-    def delete(self, request):
-        raise NotImplementedError()
+        if not request.user.is_authenticated:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        if not request.user.is_staff:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        entry_to_update = EntryService.get(pk)
+        serializer = EntrySerializer(instance=entry_to_update, data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        EntryService.update(serializer)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @staticmethod
+    def delete(request, pk: int):
+        if not EntryService.exists(pk):
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        EntryService.delete(pk)
+        return Response(status=status.HTTP_204_NO_CONTENT)
