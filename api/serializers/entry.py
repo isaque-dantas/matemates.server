@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
 
 import api.models
 from api import log
@@ -42,24 +41,55 @@ class EntrySerializer(serializers.ModelSerializer):
         log.debug(f'{data["definitions"]=}')
         return data
 
-    @staticmethod
-    def validate_content(value):
-        if EntryService.is_content_invalid(value):
-            raise ValidationError(f"content '{value}' already exists")
+    # @staticmethod
+    def validate_content(self, value):
+        errors = []
+
+        # log.debug(f'{it_is_updating_to_the_same_value=}')
+        # log.debug(f'{self.instance=}')
+        # log.debug(f'{EntryService.parse_content(value)=}')
+
+        it_is_updating_to_the_same_value = (
+                self.instance is not None
+                and
+                EntryService.parse_content(value) == self.instance.content
+        )
+
+        if EntryService.content_already_exists(value) and not it_is_updating_to_the_same_value:
+            errors.append(f"'{value}' already exists")
+
+        stars_errors: list = EntryService.get_stars_formatting_errors(value)
+        if stars_errors:
+            errors.extend(stars_errors)
+
+        log.debug(f"{stars_errors=}")
+
+        dots_errors: list = EntryService.get_dots_formatting_errors(value)
+        if dots_errors:
+            errors.extend(dots_errors)
+
+        if errors:
+            raise serializers.ValidationError(errors)
 
         return value
 
     def to_representation(self, instance):
-        representation = super().to_representation(instance)
+        log.debug(f'{instance=}')
+        log.debug(f'{instance.content=}')
+        log.debug(f'{instance.definitions.all()=}')
 
-        if isinstance(instance, api.models.Entry):
-            related_entities = EntryService.get_related_entities(instance)
+        if not isinstance(instance, api.models.Entry):
+            return super().to_representation(instance)
 
-            log.debug(f"\n{related_entities=}\n")
+        related_entities = EntryService.get_related_entities(instance)
+        log.debug(f"\n{related_entities=}\n")
 
-            representation["terms"] = TermSerializer(related_entities["terms"], many=True).data
-            representation["definitions"] = DefinitionSerializer(related_entities["definitions"], many=True).data
-            representation["questions"] = QuestionSerializer(related_entities["questions"], many=True).data
-            representation["images"] = ImageSerializer(related_entities["images"], many=True).data
-
-        return representation
+        return {
+            "id": instance.pk,
+            "content": instance.content,
+            "is_validated": instance.is_validated,
+            "terms": TermSerializer(related_entities["terms"], many=True).data,
+            "definitions": DefinitionSerializer(related_entities["definitions"], many=True).data,
+            "questions": QuestionSerializer(related_entities["questions"], many=True).data,
+            "images": ImageSerializer(related_entities["images"], many=True).data
+        }
