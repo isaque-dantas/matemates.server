@@ -6,7 +6,7 @@ from matemates_server import settings
 class UserService:
     @staticmethod
     def create(validated_data):
-        validated_data['is_admin'] = (
+        validated_data['is_staff'] = (
                 validated_data['email'] == settings.ADMIN_EMAIL
                 or
                 InvitedEmail.objects.filter(email=validated_data['email']).exists()

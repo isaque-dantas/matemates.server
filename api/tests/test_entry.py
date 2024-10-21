@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from api import log
-from api.models import Definition, Entry
+from api.models import Definition
 from api.serializers.entry import EntrySerializer
 from api.tests import BASE_URL
 from api.tests.entry_utils import EntryUtils
@@ -43,8 +43,6 @@ class EntryTests(APITestCase):
     def test_get_all__on_happy_path__should_return_OK(self):
         self.user_utils.set_database_environment({"admin-user": True})
         self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
-
-        print(Entry.objects.all())
 
         response = self.client.get(f'{BASE_URL}/entry')
 

@@ -20,7 +20,7 @@ class UserTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertNotIn('password', response.data)
-        self.assertFalse(response.data['is_admin'])
+        self.assertFalse(response.data['is_staff'])
 
         self.utils.refresh_tokens()
 
@@ -53,8 +53,8 @@ class UserTests(APITestCase):
 
         response = self.client.post(f'{BASE_URL}/users', admin_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertIn('is_admin', response.data)
-        self.assertTrue(response.data['is_admin'])
+        self.assertIn('is_staff', response.data)
+        self.assertTrue(response.data['is_staff'])
 
         self.utils.refresh_tokens()
 
@@ -81,7 +81,7 @@ class UserTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('email', response.data)
         self.assertIn('username', response.data)
-        self.assertIn('is_admin', response.data)
+        self.assertIn('is_staff', response.data)
         self.assertNotIn('password', response.data)
 
         self.assertEqual(response.data['username'], self.utils.common_user_data['username'])
@@ -139,7 +139,7 @@ class UserTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
         admin = self.utils.retrieve_user('admin-user')
-        self.assertTrue(admin.is_admin)
+        self.assertTrue(admin.is_staff)
 
     def test_turn_other_non_existent_user_admin__should_return_OK(self):
         self.utils.set_database_environment({'admin-user': True, 'common-user': False})

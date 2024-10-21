@@ -18,7 +18,7 @@ def turn_admin(request):
     if not request.user.is_authenticated:
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-    if not request.user.is_admin:
+    if not request.user.is_staff:
         return Response(status=status.HTTP_403_FORBIDDEN)
 
     user_who_invited = request.user

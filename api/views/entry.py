@@ -53,9 +53,6 @@ class SingleEntryView(APIView):
         if not EntryService.exists(pk):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        print('\n----------------\n\n' * 3)
-        print("in SingleEntryView.get\n")
-
         entry = EntryService.get(pk)
         serializer = EntrySerializer(entry)
 

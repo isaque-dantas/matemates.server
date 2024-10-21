@@ -18,7 +18,7 @@ class UserManager(BaseUserManager):
             username=validated_data['username'],
             name=validated_data['name'],
             profile_image_path=path,
-            is_staff=validated_data['is_admin'],
+            is_staff=validated_data['is_staff'],
         )
 
         user.set_password(validated_data['password'])
