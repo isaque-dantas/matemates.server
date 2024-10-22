@@ -3,7 +3,7 @@ from rest_framework.test import APIClient
 import api.models
 from api.serializers.user import UserSerializer
 from api.services.user import UserService
-from api.tests import BASE_URL
+from api.tests import BASE_URL, base64_encoded_files
 from matemates_server import settings
 
 
@@ -16,7 +16,7 @@ class UserTestsUtils:
         "email": "common-user@email.com",
         "password": "pass",
         "username": "common-user",
-        "profile_image_base64_encoded_string": "any-64-encoded"
+        "profile_image_base64": base64_encoded_files.DOG
     }
 
     admin_user_data = {
@@ -24,7 +24,7 @@ class UserTestsUtils:
         "email": settings.ADMIN_EMAIL,
         "password": "pass",
         "username": "admin-user",
-        "profile_image_base64_encoded_string": "any-64-encoded"
+        "profile_image_base64": base64_encoded_files.DOG
     }
 
     _credentials_headers = {

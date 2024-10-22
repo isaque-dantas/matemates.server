@@ -3,7 +3,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from api import log
-from api.models import Entry
 from api.serializers.entry import EntrySerializer
 from api.services.entry import EntryService
 from api.services.knowledge_area import KnowledgeAreaService

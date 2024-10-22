@@ -1,9 +1,10 @@
 from rest_framework.exceptions import ValidationError
 
+from api import log
 from api.models import Definition, KnowledgeArea
 from api.services.knowledge_area import KnowledgeAreaService
 
-from api import log
+
 class DefinitionService:
     @staticmethod
     def create_all(entry_data, entry):
@@ -43,11 +44,6 @@ class DefinitionService:
                 errors.append({"knowledge_area__content": err.detail})
             else:
                 errors.append({})
-
-        filter_result = filter(lambda error: error != {}, errors)
-
-        # log.debug(f'{errors=}')
-        # log.debug(f'{list(filter_result)=}')
 
         if errors and list(filter(lambda error: error != {}, errors)) != []:
             raise ValidationError({'definitions': errors})
