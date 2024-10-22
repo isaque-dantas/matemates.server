@@ -8,7 +8,7 @@ from matemates_server import settings
 class UserManager(BaseUserManager):
     @staticmethod
     def create_user(**validated_data):
-        if validated_data['profile_image_base64_encoded_string']:
+        if 'profile_image_base64_encoded_string' in validated_data:
             path = ImageService.store_image_file(validated_data['profile_image_base64_encoded_string'])
         else:
             path = ''
@@ -23,7 +23,6 @@ class UserManager(BaseUserManager):
 
         user.set_password(validated_data['password'])
         user.is_active = True
-
         user.save()
 
         return user
@@ -31,7 +30,7 @@ class UserManager(BaseUserManager):
     def create_superuser(self, **data):
         user = self.create_user(**data)
 
-        user.is_staff()
+        user.is_staff = True
         user.is_superuser = True
         user.save()
 

@@ -13,7 +13,7 @@ from matemates_server import settings
 class UserTests(APITestCase):
     utils = UserTestsUtils()
 
-    def test_post_on_happy_path__should_return_OK(self):
+    def test_post__on_happy_path__should_return_OK(self):
         self.utils.set_database_environment({'common-user': False})
 
         response = self.client.post(f'{BASE_URL}/users', data=self.utils.common_user_data, format='json')
@@ -24,7 +24,7 @@ class UserTests(APITestCase):
 
         self.utils.refresh_tokens()
 
-    def test_post_with_non_existent_field__should_return_CREATED(self):
+    def test_post__with_non_existent_field__should_return_CREATED(self):
         self.utils.set_database_environment({'common-user': False})
 
         data = self.utils.common_user_data.copy()
@@ -36,7 +36,7 @@ class UserTests(APITestCase):
 
         self.utils.refresh_tokens()
 
-    def test_post_with_repeated_unique_attributes__should_return_BAD_REQUEST(self):
+    def test_post__with_repeated_unique_attributes__should_return_BAD_REQUEST(self):
         self.utils.set_database_environment({'common-user': True})
 
         response = self.client.post(f'{BASE_URL}/users', data=self.utils.common_user_data)
@@ -44,7 +44,7 @@ class UserTests(APITestCase):
 
         self.utils.refresh_tokens()
 
-    def test_post_with_admin_email__should_return_CREATED(self):
+    def test_post__with_admin_email__should_return_CREATED(self):
         self.utils.set_database_environment({'admin-user': False})
 
         admin_data = self.utils.common_user_data.copy()
@@ -52,6 +52,20 @@ class UserTests(APITestCase):
         admin_data['email'] = settings.ADMIN_EMAIL
 
         response = self.client.post(f'{BASE_URL}/users', admin_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn('is_staff', response.data)
+        self.assertTrue(response.data['is_staff'])
+
+        self.utils.refresh_tokens()
+
+    def test_post__without_image__should_return_CREATED(self):
+        self.utils.set_database_environment({'admin-user': False})
+
+        admin_data = self.utils.admin_user_data.copy()
+        admin_data.pop("profile_image_base64_encoded_string", None)
+
+        response = self.client.post(f'{BASE_URL}/users', admin_data)
+
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIn('is_staff', response.data)
         self.assertTrue(response.data['is_staff'])
