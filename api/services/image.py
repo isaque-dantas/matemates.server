@@ -22,20 +22,24 @@ class ImageService:
         )
 
     @staticmethod
-    def create(data, entry, image_number):
+    def create(data, entry, image_number) -> dict[str, Image | str]:
         # return Image(
         #     caption=data["caption"],
         #     entry=entry,
         #     image_number_in_entry=image_number
         # )
+
         image = Image.objects.model(
-            content=data["base64_image"],
             caption=data["caption"],
             entry=entry,
             image_number_in_entry=image_number
         )
 
-        path = image_directory_path(image, "abcde.jpg")
+        path = image_directory_path(image, f"abcde.{data['format']}")
         log.debug(f"{path=}")
 
-        return image
+        return {
+            "image": image,
+            "format": data["format"],
+            "content": data["base64_image"],
+        }

@@ -38,7 +38,7 @@ class EntryUtils:
             ],
             "images": [
                 {"caption": "ângulo reto na imagem", "format": "jpg", "base64_image": base64_encoded_files.CALCULADORA},
-                {"caption": "outro ângulo reto", "format": "jpg", "base64_image": base64_encoded_files.CALCULADORA},
+                {"caption": "outro ângulo reto", "format": "jpg", "base64_image": base64_encoded_files.ANGULO_RETO},
             ],
             "questions": [
                 {"statement": "Quantas galinhas um ovo consegue pôr?",

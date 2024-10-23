@@ -1,13 +1,30 @@
+import base64
+
+from django.core.files.base import ContentFile
 from django.db import models
 
+from api import log
 from api.models.entry import Entry
 
 
 class ImageManager(models.Manager):
-    def create(self, images):
+    def create(self, images_data: list[dict]):
         # self.bulk_create(images)
-        for image in images:
+        images = []
+        for image_data in images_data:
+            image = image_data['image']
+            image_format = image_data['format']
+            image_content = image_data['content']
+
+            base64_str = image_content.split(",")[-1]
+            decoded_image = base64.b64decode(base64_str)
+
+            image.content.save(f"foo.{image_format}", ContentFile(decoded_image))
+            log.debug(f"{image=}")
+
             image.save()
+
+            images.append(image)
 
         return images
 

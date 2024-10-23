@@ -10,7 +10,7 @@ class ImageSerializer(serializers.ModelSerializer):
         fields = ['caption', 'base64_image', 'format']
         list_serializer_class = CustomListSerializer
 
-    base64_image = Base64ImageField()
+    base64_image = Base64ImageField(source='content')
     caption = serializers.CharField(required=False)
     format = serializers.CharField()
 
