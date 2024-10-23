@@ -72,6 +72,8 @@ class EntryTests(APITestCase):
         self.assertNotIn("entry", response.data["terms"])
 
         self.assertIn("definitions", response.data)
+        self.assertNotIn("entries", response.data["definitions"][0])
+
         self.assertIn("knowledge_area", response.data["definitions"][0])
         self.assertIn("questions", response.data)
         self.assertIn("images", response.data)

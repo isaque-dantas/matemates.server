@@ -3,7 +3,6 @@ from rest_framework.serializers import StringRelatedField, ModelSerializer
 from api import log
 from api.models import Definition
 from api.serializers.custom_list_serializer import CustomListSerializer
-from api.serializers.knowledge_area import KnowledgeAreaSerializer
 from api.services.definition import DefinitionService
 
 
@@ -25,5 +24,8 @@ class DefinitionSerializer(ModelSerializer):
         log.debug(f"instance in DefinitionSerializer: {instance}")
         return {
             "content": instance.content,
-            "knowledge_area": KnowledgeAreaSerializer(instance.knowledge_area).data
+            "knowledge_area": {
+                "content": instance.knowledge_area.content,
+                "subject": instance.knowledge_area.subject
+            }
         }

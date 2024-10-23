@@ -76,15 +76,4 @@ class EntrySerializer(serializers.ModelSerializer):
         if not isinstance(instance, api.models.Entry):
             return super().to_representation(instance)
 
-        related_entities = EntryService.get_related_entities(instance)
-        log.debug(f"\n{related_entities=}\n")
-
-        return {
-            "id": instance.pk,
-            "content": instance.content,
-            "is_validated": instance.is_validated,
-            "terms": TermSerializer(related_entities["terms"], many=True).data,
-            "definitions": DefinitionSerializer(related_entities["definitions"], many=True).data,
-            "questions": QuestionSerializer(related_entities["questions"], many=True).data,
-            "images": ImageSerializer(related_entities["images"], many=True).data
-        }
+        return EntryService.to_representation(instance)

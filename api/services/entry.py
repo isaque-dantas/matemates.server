@@ -3,6 +3,10 @@ from rest_framework import serializers
 
 from api import log
 from api.models import Entry, Definition
+from api.serializers.definition import DefinitionSerializer
+from api.serializers.image import ImageSerializer
+from api.serializers.question import QuestionSerializer
+from api.serializers.term import TermSerializer
 from api.services.definition import DefinitionService
 from api.services.image import ImageService
 from api.services.question import QuestionService
@@ -108,7 +112,13 @@ class EntryService:
             knowledge_area__content=knowledge_area_content
         ).select_related("entry")
 
+        log.debug(f"{len(definitions)=}")
+
         return [definition.entry for definition in definitions]
+
+    @staticmethod
+    def get_data_from_instances(entries: list[Entry]):
+        return [EntryService.to_representation(entry) for entry in entries]
 
     @staticmethod
     def update(serializer: serializers.ModelSerializer):
@@ -140,4 +150,19 @@ class EntryService:
             "images": instance.images.all(),
             "questions": instance.questions.all(),
             "definitions": instance.definitions.all(),
+        }
+
+    @staticmethod
+    def to_representation(instance: Entry):
+        related_entities = EntryService.get_related_entities(instance)
+        log.debug(f"\n{related_entities=}\n")
+
+        return {
+            "id": instance.pk,
+            "content": instance.content,
+            "is_validated": instance.is_validated,
+            "terms": TermSerializer(related_entities["terms"], many=True).data,
+            "definitions": DefinitionSerializer(related_entities["definitions"], many=True).data,
+            "questions": QuestionSerializer(related_entities["questions"], many=True).data,
+            "images": ImageSerializer(related_entities["images"], many=True).data
         }
