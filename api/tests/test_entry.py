@@ -68,6 +68,9 @@ class EntryTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertIn("terms", response.data)
+        self.assertIn("syllables", response.data["terms"][0])
+        self.assertNotIn("entry", response.data["terms"])
+
         self.assertIn("definitions", response.data)
         self.assertIn("knowledge_area", response.data["definitions"][0])
         self.assertIn("questions", response.data)
