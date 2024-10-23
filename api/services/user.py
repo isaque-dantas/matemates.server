@@ -1,6 +1,5 @@
 from api import log
 from api.models import User, InvitedEmail
-from api.services.image import ImageService
 from matemates_server import settings
 
 
@@ -25,10 +24,7 @@ class UserService:
         instance.name = validated_data['name']
         instance.set_password(validated_data['password'])
 
-        path = ImageService.store_image_file(
-            validated_data['profile_image_base64_encoded_string']
-        )
-        instance.profile_image_path = path
+        instance.profile_image = validated_data['profile_image']
 
         instance.save()
 

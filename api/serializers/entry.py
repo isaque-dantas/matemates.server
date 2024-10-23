@@ -41,13 +41,8 @@ class EntrySerializer(serializers.ModelSerializer):
         log.debug(f'{data["definitions"]=}')
         return data
 
-    # @staticmethod
     def validate_content(self, value):
         errors = []
-
-        # log.debug(f'{it_is_updating_to_the_same_value=}')
-        # log.debug(f'{self.instance=}')
-        # log.debug(f'{EntryService.parse_content(value)=}')
 
         it_is_updating_to_the_same_value = (
                 self.instance is not None

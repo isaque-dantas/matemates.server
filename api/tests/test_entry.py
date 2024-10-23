@@ -1,3 +1,5 @@
+import os
+
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -7,6 +9,7 @@ from api.serializers.entry import EntrySerializer
 from api.tests import BASE_URL
 from api.tests.entry_utils import EntryUtils
 from api.tests.user_utils import UserTestsUtils
+from matemates_server import settings
 
 
 class EntryTests(APITestCase):
@@ -26,6 +29,11 @@ class EntryTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(self.entry_utils.exists("calculadora"))
+
+        calculadora = self.entry_utils.retrieve("calculadora")
+        files_in_uploads_folder = os.listdir(settings.MEDIA_ROOT)
+        self.assertIn(f'entry_{calculadora.pk}__image_0__.jpg', files_in_uploads_folder)
+        self.assertIn(f'entry_{calculadora.pk}__image_1__.jpg', files_in_uploads_folder)
 
     def test_post__with_common_credentials__should_return_FORBIDDEN(self):
         self.user_utils.set_database_environment({"common-user": True})

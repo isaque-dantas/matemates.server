@@ -1,7 +1,7 @@
-from random import random
-
-from api.models import Image
 from api import log
+from api.models import Image
+from api.models.image import image_directory_path
+
 
 class ImageService:
     @staticmethod
@@ -18,18 +18,28 @@ class ImageService:
         ]
 
         return Image.objects.create(
-            [ImageService.create(data, entry) for data in data_list],
+            [ImageService.create(data, entry, i) for i, data in enumerate(data_list)],
         )
 
     @staticmethod
-    def create(data, entry):
-        image_path = ImageService.store_image_file(
-            data["base64_encoded_string"]
+    def create(data, entry, image_number) -> dict[str, Image | str]:
+        # return Image(
+        #     caption=data["caption"],
+        #     entry=entry,
+        #     image_number_in_entry=image_number
+        # )
+
+        image = Image.objects.model(
+            caption=data["caption"],
+            entry=entry,
+            image_number_in_entry=image_number
         )
 
-        return Image(caption=data["caption"], path=image_path, entry=entry)
+        path = image_directory_path(image, f"abcde.{data['format']}")
+        log.debug(f"{path=}")
 
-    @staticmethod
-    def store_image_file(base64_encoded_string: str):
-        # TODO: Code to store image
-        return f'foo {int(random() * 1000 + 5)}'
+        return {
+            "image": image,
+            "format": data["format"],
+            "content": data["base64_image"],
+        }
