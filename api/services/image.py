@@ -1,5 +1,5 @@
 from api import log
-from api.models import Image
+from api.models import Image, Entry
 from api.models.image import image_directory_path
 
 
@@ -23,12 +23,6 @@ class ImageService:
 
     @staticmethod
     def create(data, entry, image_number) -> dict[str, Image | str]:
-        # return Image(
-        #     caption=data["caption"],
-        #     entry=entry,
-        #     image_number_in_entry=image_number
-        # )
-
         image = Image.objects.model(
             caption=data["caption"],
             entry=entry,
@@ -43,3 +37,15 @@ class ImageService:
             "format": data["format"],
             "content": data["base64_image"],
         }
+
+    @staticmethod
+    def get_all_related(entry: Entry):
+        return Image.objects.filter(entry=entry)
+
+    @staticmethod
+    def get(image_pk: int):
+        return Image.objects.get(pk=image_pk)
+
+    @staticmethod
+    def exists(image_pk: int):
+        return Image.objects.filter(pk=image_pk).exists()

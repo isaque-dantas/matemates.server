@@ -14,7 +14,7 @@ def hello_world(request):
 
 
 @api_view(['POST'])
-def turn_admin(request):
+def turn_admin_view(request):
     if not request.user.is_authenticated:
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
