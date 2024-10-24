@@ -98,7 +98,7 @@ DATABASES = {
     }
 }
 
-MEDIA_ROOT = '/home/isaque/PycharmProjects/matemates.server/uploads/'
+MEDIA_ROOT = f'{Path.home()}/PycharmProjects/matemates.server/uploads/'
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
