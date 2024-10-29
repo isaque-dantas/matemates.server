@@ -53,7 +53,10 @@ class EntryTests(APITestCase):
         self.user_utils.set_database_environment({"admin-user": True})
         self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
 
-        response = self.client.get(f'{BASE_URL}/entry')
+        response = self.client.get(
+            f'{BASE_URL}/entry',
+            headers=self.user_utils.admin_credentials
+        )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(len(response.data) == 2)
@@ -68,6 +71,8 @@ class EntryTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+        self.assertIn("is_validated", response.data)
+
         self.assertIn("terms", response.data)
         self.assertIn("syllables", response.data["terms"][0])
         self.assertNotIn("entry", response.data["terms"])
@@ -80,9 +85,13 @@ class EntryTests(APITestCase):
         self.assertIn("images", response.data)
 
     def test_get_all_from_specified_knowledge_area__on_happy_path__should_return_OK(self):
+        self.user_utils.set_database_environment({"admin-user": True})
         self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
 
-        response = self.client.get(f'{BASE_URL}/entry?knowledge_area=estatística')
+        response = self.client.get(
+            f'{BASE_URL}/entry?knowledge_area=estatística',
+            headers=self.user_utils.admin_credentials
+        )
 
         log.debug(f"{response.data=}")
 
@@ -93,8 +102,19 @@ class EntryTests(APITestCase):
         self.assertEqual(response.data[0]["id"], calculadora_id)
 
     def test_get_all_from_specified_knowledge_area__non_existent_knowledge_area__should_return_NOT_FOUND(self):
-        response = self.client.get(f'{BASE_URL}/entry?knowledge_area=non-existent-knowledge-area')
+        self.user_utils.set_database_environment({"admin-user": True})
+        response = self.client.get(
+            f'{BASE_URL}/entry?knowledge_area=non-existent-knowledge-area',
+            headers=self.user_utils.admin_credentials
+        )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_all__non_logged_user__should_not_return_non_validated(self):
+        self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
+        response = self.client.get(f'{BASE_URL}/entry')
+
+        are_all_validated = all([entry['is_validated'] for entry in response.data])
+        self.assertTrue(are_all_validated)
 
     def test_put__on_happy_path__should_return_OK(self):
         self.user_utils.set_database_environment({"admin-user": True})

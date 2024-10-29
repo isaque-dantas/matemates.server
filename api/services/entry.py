@@ -99,7 +99,10 @@ class EntryService:
         return Entry.objects.filter(pk=pk).exists()
 
     @staticmethod
-    def get_all():
+    def get_all(should_get_only_validated: bool):
+        if should_get_only_validated:
+            return Entry.objects.filter(is_validated=True).all()
+
         return Entry.objects.all()
 
     @staticmethod
@@ -107,7 +110,7 @@ class EntryService:
         return Entry.objects.get(pk=pk)
 
     @staticmethod
-    def get_all_related_to_knowledge_area(knowledge_area_content: str):
+    def get_all_related_to_knowledge_area(knowledge_area_content: str, should_get_only_validated: bool):
         definitions = Definition.objects.filter(
             knowledge_area__content=knowledge_area_content
         ).select_related("entry")
@@ -130,7 +133,11 @@ class EntryService:
             entry = next(filter(lambda e: e.pk == duplicated_id, entries))
             non_duplicated_entries.append(entry)
 
+        if should_get_only_validated:
+            return list(filter(lambda e: e.is_validated, non_duplicated_entries))
+
         return non_duplicated_entries
+
 
     @staticmethod
     def get_data_from_instances(entries: list[Entry]):

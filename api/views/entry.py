@@ -11,15 +11,17 @@ from api.services.knowledge_area import KnowledgeAreaService
 class EntryView(APIView):
     @staticmethod
     def get(request):
+        should_get_only_validated = not request.user.is_authenticated or not request.user.is_staff
+
         if request.query_params and "knowledge_area" in request.query_params:
             knowledge_area__content = request.query_params["knowledge_area"]
 
             if not KnowledgeAreaService.exists_content(knowledge_area__content):
                 return Response(status=status.HTTP_404_NOT_FOUND)
 
-            entries = EntryService.get_all_related_to_knowledge_area(knowledge_area__content)
+            entries = EntryService.get_all_related_to_knowledge_area(knowledge_area__content, should_get_only_validated)
         else:
-            entries = EntryService.get_all()
+            entries = EntryService.get_all(should_get_only_validated)
 
         serializer = EntrySerializer(entries, many=True)
 
