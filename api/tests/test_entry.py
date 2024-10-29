@@ -6,6 +6,7 @@ from rest_framework.test import APITestCase
 from api import log
 from api.models import Definition
 from api.serializers.entry import EntrySerializer
+from api.services.entry import EntryService
 from api.tests import BASE_URL
 from api.tests.entry_utils import EntryUtils
 from api.tests.user_utils import UserTestsUtils
@@ -221,3 +222,16 @@ class EntrySerializerTestCase(APITestCase):
 
         serializer = EntrySerializer(data=data)
         self.assertFalse(serializer.is_valid())
+
+
+class EntryServiceTestCase(APITestCase):
+    user_utils = UserTestsUtils()
+    entry_utils = EntryUtils()
+
+    def test_get_all_related_to_knowledge_area__on_happy_path__should_not_return_duplicates(self):
+        self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
+        entries = EntryService.get_all_related_to_knowledge_area("álgebra")
+
+        entries_ids = [entry.pk for entry in entries]
+        are_there_any_duplicates = any([entries_ids.count(entry_id) >= 2 for entry_id in entries_ids])
+        self.assertFalse(are_there_any_duplicates)

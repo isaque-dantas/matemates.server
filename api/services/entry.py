@@ -114,7 +114,23 @@ class EntryService:
 
         log.debug(f"{len(definitions)=}")
 
-        return [definition.entry for definition in definitions]
+        entries = [definition.entry for definition in definitions]
+
+        entries_ids = [entry.pk for entry in entries]
+        duplicated_ids = filter(lambda e: entries_ids.count(e) >= 2, entries_ids)
+        duplicated_ids = list(set(duplicated_ids))
+
+        non_duplicated_entries = [
+            entry
+            for entry in entries
+            if entry.pk not in duplicated_ids
+        ]
+
+        for duplicated_id in duplicated_ids:
+            entry = next(filter(lambda e: e.pk == duplicated_id, entries))
+            non_duplicated_entries.append(entry)
+
+        return non_duplicated_entries
 
     @staticmethod
     def get_data_from_instances(entries: list[Entry]):
