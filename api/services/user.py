@@ -24,7 +24,7 @@ class UserService:
         instance.name = validated_data['name']
         instance.set_password(validated_data['password'])
 
-        instance.profile_image = validated_data['profile_image']
+        instance.profile_image = validated_data['profile_image_base64']
 
         instance.save()
 

@@ -14,7 +14,7 @@ class ImageTestCase(APITestCase):
     def test_get__on_happy_path__should_return_200(self):
         self.entry_utils.set_database_environment({"calculadora": True})
         calculadora: Entry = self.entry_utils.retrieve("calculadora")
-        image_pk = Image.objects.filter(pk=calculadora.pk).first().pk
+        image_pk = Image.objects.filter(entry__pk=calculadora.pk).first().pk
 
         response = self.client.get(f"{BASE_URL}/entry_image/{image_pk}")
 
