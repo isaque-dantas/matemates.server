@@ -250,7 +250,7 @@ class EntryServiceTestCase(APITestCase):
 
     def test_get_all_related_to_knowledge_area__on_happy_path__should_not_return_duplicates(self):
         self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
-        entries = EntryService.get_all_related_to_knowledge_area("álgebra")
+        entries = EntryService.get_all_related_to_knowledge_area("álgebra", False)
 
         entries_ids = [entry.pk for entry in entries]
         are_there_any_duplicates = any([entries_ids.count(entry_id) >= 2 for entry_id in entries_ids])
