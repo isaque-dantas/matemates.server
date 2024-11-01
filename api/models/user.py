@@ -9,7 +9,7 @@ class UserManager(BaseUserManager):
             email=User.objects.normalize_email(validated_data['email']),
             username=validated_data['username'],
             name=validated_data['name'],
-            profile_image=validated_data["profile_image_base64"],
+            profile_image=validated_data.get("profile_image_base64"),
             is_staff=validated_data['is_staff'],
         )
 
