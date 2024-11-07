@@ -8,8 +8,8 @@ from api.models.entry import Entry
 
 
 class ImageManager(models.Manager):
-    def create(self, images_data: list[dict]):
-        # self.bulk_create(images)
+    @staticmethod
+    def create(images_data: list[dict]):
         images = []
         for image_data in images_data:
             image = image_data['image']

@@ -152,8 +152,10 @@ class UserTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-        admin = self.utils.retrieve_user('admin-user')
-        self.assertTrue(admin.is_staff)
+        common = self.utils.retrieve_user('common-user')
+        self.assertTrue(common.is_staff)
+
+        self.utils.set_database_environment({'common-user': False})
 
     def test_turn_other_non_existent_user_admin__should_return_OK(self):
         self.utils.set_database_environment({'admin-user': True, 'common-user': False})

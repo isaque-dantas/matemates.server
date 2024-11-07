@@ -14,9 +14,6 @@ class ImageSerializer(serializers.ModelSerializer):
     caption = serializers.CharField(required=False)
     format = serializers.CharField()
 
-    def validate(self, attrs):
-        return attrs
-
     def to_representation(self, instance):
         return {
             "id": instance.id,

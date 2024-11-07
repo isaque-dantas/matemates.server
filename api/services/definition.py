@@ -32,10 +32,10 @@ class DefinitionService:
         return KnowledgeArea.objects.filter(content=content).exists()
 
     @staticmethod
-    def validate(attrs):
+    def validate(data):
         errors = []
 
-        for attr in attrs:
+        for attr in data:
             try:
                 DefinitionService.validate_knowledge_area__content(
                     attr["knowledge_area__content"]
@@ -52,7 +52,3 @@ class DefinitionService:
     def validate_knowledge_area__content(value):
         if not DefinitionService.does_knowledge_area_content_exist(value):
             raise ValidationError(f"KnowledgeArea content '{value}' does not exist in database")
-
-    @staticmethod
-    def get_all_related_data(entry_id: int):
-        pass

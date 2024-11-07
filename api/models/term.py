@@ -9,14 +9,6 @@ class TermManager(models.Manager):
         term.save()
         return term
 
-    @staticmethod
-    def parse_terms_from_content(content: str):
-        return content.split()
-
-    @staticmethod
-    def get_content_without_mask(content: str):
-        return content.replace("*", "").replace(".", "")
-
 
 class Term(models.Model):
     class Gender(models.TextChoices):
