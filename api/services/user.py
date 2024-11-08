@@ -22,7 +22,10 @@ class UserService:
         instance.username = validated_data['username']
         instance.email = validated_data['email']
         instance.name = validated_data['name']
-        instance.set_password(validated_data['password'])
+
+        password = validated_data.get('password', None)
+        if password:
+            instance.set_password(password)
 
         instance.profile_image = validated_data['profile_image_base64']
 
