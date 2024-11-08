@@ -27,6 +27,9 @@ class UserService:
         if password:
             instance.set_password(password)
 
+        profile_image_base64 = validated_data.get('profile_image_base64', None)
+        if profile_image_base64:
+            instance.set_password(profile_image_base64)
         instance.profile_image = validated_data['profile_image_base64']
 
         instance.save()
