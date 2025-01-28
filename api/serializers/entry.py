@@ -29,8 +29,8 @@ class EntrySerializer(serializers.ModelSerializer):
 
         return {
             "content": internal_value["content"],
-            "main_term_gender": data["main_term_gender"],
-            "main_term_grammatical_category": data["main_term_grammatical_category"],
+            "main_term_gender": data.get("main_term_gender"),
+            "main_term_grammatical_category": data.get("main_term_grammatical_category"),
             "images": ImageSerializer(data=data["images"], many=True, read_only=True),
             "definitions": DefinitionSerializer(data=data["definitions"], many=True, read_only=True),
             "questions": QuestionSerializer(data=data["questions"], many=True, read_only=True),
@@ -52,6 +52,8 @@ class EntrySerializer(serializers.ModelSerializer):
 
         if EntryService.content_already_exists(value) and not it_is_updating_to_the_same_value:
             errors.append(f"'{value}' already exists")
+
+        log.debug(f"{value=}")
 
         stars_errors: list = EntryService.get_stars_formatting_errors(value)
         if stars_errors:
@@ -76,4 +78,4 @@ class EntrySerializer(serializers.ModelSerializer):
         if not isinstance(instance, api.models.Entry):
             return super().to_representation(instance)
 
-        return EntryService.to_representation(instance)
+        return EntryService.to_representation(instance, context=self.context)

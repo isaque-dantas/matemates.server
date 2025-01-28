@@ -18,8 +18,8 @@ class EntryUtils:
                 {"content": "Alguma outra definição.", "knowledge_area__content": "álgebra"},
             ],
             "images": [
-                {"caption": "ângulo reto na imagem", "format": "jpg", "base64_image": base64_encoded_files.ANGULO_RETO},
-                {"caption": "outro ângulo reto", "format": "jpg", "base64_image": base64_encoded_files.ANGULO_RETO},
+                {"caption": "ângulo reto na imagem", "base64_image": base64_encoded_files.ANGULO_RETO, "id": None},
+                {"caption": "outro ângulo reto", "base64_image": base64_encoded_files.ANGULO_RETO, "id": None},
             ],
             "questions": [
                 {"statement": "Um quadrado tem ângulos retos?", "answer": "Sim.", "explanation": "Porque sim."},
@@ -37,8 +37,8 @@ class EntryUtils:
                  "knowledge_area__content": "estatística"},
             ],
             "images": [
-                {"caption": "ângulo reto na imagem", "format": "jpg", "base64_image": base64_encoded_files.CALCULADORA},
-                {"caption": "outro ângulo reto", "format": "jpg", "base64_image": base64_encoded_files.ANGULO_RETO},
+                {"caption": "ângulo reto na imagem", "base64_image": base64_encoded_files.CALCULADORA, "id": None},
+                {"caption": "outro ângulo reto", "base64_image": base64_encoded_files.ANGULO_RETO, "id": None},
             ],
             "questions": [
                 {"statement": "Quantas galinhas um ovo consegue pôr?",

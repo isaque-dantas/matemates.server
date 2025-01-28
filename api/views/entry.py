@@ -55,7 +55,7 @@ class SingleEntryView(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         entry = EntryService.get(pk)
-        serializer = EntrySerializer(entry)
+        serializer = EntrySerializer(entry, context={'request': request})
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 

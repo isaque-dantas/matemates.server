@@ -29,12 +29,8 @@ class ImageService:
             image_number_in_entry=image_number
         )
 
-        path = image_directory_path(image, f"abcde.{data['format']}")
-        log.debug(f"{path=}")
-
         return {
             "image": image,
-            "format": data["format"],
             "content": data["base64_image"],
         }
 

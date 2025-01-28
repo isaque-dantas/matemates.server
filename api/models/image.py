@@ -13,13 +13,13 @@ class ImageManager(models.Manager):
         images = []
         for image_data in images_data:
             image = image_data['image']
-            image_format = image_data['format']
+            # image_format = image_data['format']
             image_content = image_data['content']
 
             base64_str = image_content.split(",")[-1]
             decoded_image = base64.b64decode(base64_str)
 
-            image.content.save(f"foo.{image_format}", ContentFile(decoded_image))
+            image.content.save(f"foo.png", ContentFile(decoded_image))
             log.debug(f"{image=}")
 
             image.save()

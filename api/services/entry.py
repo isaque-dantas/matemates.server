@@ -2,7 +2,7 @@ from django.db.models import Model
 from rest_framework import serializers
 
 from api import log
-from api.models import Entry, Definition
+from api.models import Entry, Definition, Image
 from api.serializers.definition import DefinitionSerializer
 from api.serializers.image import ImageSerializer
 from api.serializers.question import QuestionSerializer
@@ -148,20 +148,45 @@ class EntryService:
         instance = serializer.instance
         entry_data = serializer.validated_data
 
-        instance.content = EntryService.parse_content(entry_data['content'])
-        EntryService.delete_related_entities(instance)
+        images_ids_that_must_not_be_updated = [
+            data["id"] for data in entry_data["images"]
+            if data["base64_image"] == ''
+        ]
+
+        log.debug(f"{entry_data['images']=}")
+        log.debug(f"{images_ids_that_must_not_be_updated=}")
+
+        entry_data["images"] = [
+            image for image in entry_data["images"]
+            if image["id"] not in images_ids_that_must_not_be_updated
+        ]
+
+        EntryService.delete_related_entities(instance, images_ids_that_must_not_be_deleted=images_ids_that_must_not_be_updated)
         EntryService.create_related_entities(entry_data, instance)
+
+        instance.content = EntryService.parse_content(entry_data['content'])
+        instance.save()
 
     @staticmethod
     def delete(pk: int):
         EntryService.get(pk).delete()
 
     @staticmethod
-    def delete_related_entities(instance: Entry):
+    def delete_related_entities(instance: Entry, images_ids_that_must_not_be_deleted: list[int] | None = None):
         related_entities: dict[str, Model] = EntryService.get_related_entities(instance)
 
-        for related_entity in related_entities.values():
-            related_entity.delete()
+        for entity_name, entities in related_entities.items():
+
+            if entity_name == "images":
+                for image in entities:
+                    if image.id not in images_ids_that_must_not_be_deleted:
+                        log.debug(f"{image.id=}")
+                        image.delete()
+
+                continue
+            else:
+                log.debug(f"{entities=}")
+                entities.delete()
 
     @staticmethod
     def get_related_entities(instance: Entry) -> dict[str, Model]:
@@ -176,7 +201,7 @@ class EntryService:
         }
 
     @staticmethod
-    def to_representation(instance: Entry):
+    def to_representation(instance: Entry, context: dict | None = None):
         related_entities = EntryService.get_related_entities(instance)
         log.debug(f"\n{related_entities=}\n")
 
@@ -187,5 +212,5 @@ class EntryService:
             "terms": TermSerializer(related_entities["terms"], many=True).data,
             "definitions": DefinitionSerializer(related_entities["definitions"], many=True).data,
             "questions": QuestionSerializer(related_entities["questions"], many=True).data,
-            "images": ImageSerializer(related_entities["images"], many=True).data
+            "images": ImageSerializer(related_entities["images"], many=True, context=context).data
         }
