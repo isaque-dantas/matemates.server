@@ -28,7 +28,7 @@ class EntrySerializer(serializers.ModelSerializer):
         log.debug(f'{data=}')
 
         return {
-            "content": internal_value["content"],
+            "content": internal_value["content"].strip(),
             "main_term_gender": data.get("main_term_gender"),
             "main_term_grammatical_category": data.get("main_term_grammatical_category"),
             "images": ImageSerializer(data=data["images"], many=True, read_only=True),

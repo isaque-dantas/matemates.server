@@ -49,6 +49,24 @@ class EntryTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    def test_post__with_missing_stars_in_content__should_return_BAD_REQUEST(self):
+        self.user_utils.set_database_environment({"admin-user": True})
+        self.entry_utils.set_database_environment({"angulo-reto": False})
+
+        data = self.entry_utils.get_data("angulo-reto")
+        data["content"] = "an.gu.lo re.to"
+
+        response = self.client.post(
+            f'{BASE_URL}/entry',
+            data,
+            headers=self.user_utils.admin_credentials,
+            format='json'
+        )
+
+        log.debug(f"{response.json()=}")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_get_all__on_happy_path__should_return_OK(self):
         self.user_utils.set_database_environment({"admin-user": True})
         self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
