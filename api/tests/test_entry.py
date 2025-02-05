@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from api import log
-from api.models import Definition
+from api.models import Definition, Entry
 from api.serializers.entry import EntrySerializer
 from api.services.entry import EntryService
 from api.tests import BASE_URL
@@ -133,6 +133,19 @@ class EntryTests(APITestCase):
 
         are_all_validated = all([entry['is_validated'] for entry in response.data])
         self.assertTrue(are_all_validated)
+
+    def test_get_with_search__calc_parameter__should_return_OK(self):
+        self.user_utils.set_database_environment({"admin-user": True})
+        self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
+
+        response = self.client.get(
+            f'{BASE_URL}/entry?search_query=calc',
+            headers=self.user_utils.admin_credentials,
+            format='json'
+        )
+
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["content"], "calculadora")
 
     def test_put__on_happy_path__should_return_OK(self):
         self.user_utils.set_database_environment({"admin-user": True})

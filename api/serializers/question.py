@@ -9,10 +9,3 @@ class QuestionSerializer(serializers.ModelSerializer):
         model = Question
         fields = '__all__'
         list_serializer_class = CustomListSerializer
-
-    # def to_representation(self, instance):
-    #     return {
-    #         "statement": instance.statement,
-    #         "answer": instance.answer,
-    #         "explanation": instance.explanation,
-    #     }

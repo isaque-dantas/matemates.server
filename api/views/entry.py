@@ -12,6 +12,7 @@ class EntryView(APIView):
     @staticmethod
     def get(request):
         should_get_only_validated = not request.user.is_authenticated or not request.user.is_staff
+        log.debug(f'{should_get_only_validated=}')
 
         if request.query_params and "knowledge_area" in request.query_params:
             knowledge_area__content = request.query_params["knowledge_area"]
@@ -20,6 +21,15 @@ class EntryView(APIView):
                 return Response(status=status.HTTP_404_NOT_FOUND)
 
             entries = EntryService.get_all_related_to_knowledge_area(knowledge_area__content, should_get_only_validated)
+        elif request.query_params and "search_query" in request.query_params:
+            search_query = request.query_params["search_query"]
+            entries = EntryService.search_by_content(search_query, should_get_only_validated)
+
+            # all_entries = EntryService.get_all(should_get_only_validated)
+            # log.debug(f'{entries=}')
+            # log.debug(f'{[entry.content for entry in all_entries]=}')
+            # log.debug(f'{search_query=}')
+            # log.debug(f'{should_get_only_validated=}')
         else:
             entries = EntryService.get_all(should_get_only_validated)
 

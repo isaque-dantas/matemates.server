@@ -138,7 +138,6 @@ class EntryService:
 
         return non_duplicated_entries
 
-
     @staticmethod
     def get_data_from_instances(entries: list[Entry]):
         return [EntryService.to_representation(entry) for entry in entries]
@@ -161,7 +160,8 @@ class EntryService:
             if image["id"] not in images_ids_that_must_not_be_updated
         ]
 
-        EntryService.delete_related_entities(instance, images_ids_that_must_not_be_deleted=images_ids_that_must_not_be_updated)
+        EntryService.delete_related_entities(instance,
+                                             images_ids_that_must_not_be_deleted=images_ids_that_must_not_be_updated)
         EntryService.create_related_entities(entry_data, instance)
 
         instance.content = EntryService.parse_content(entry_data['content'])
@@ -214,3 +214,12 @@ class EntryService:
             "questions": QuestionSerializer(related_entities["questions"], many=True).data,
             "images": ImageSerializer(related_entities["images"], many=True, context=context).data
         }
+
+    @staticmethod
+    def search_by_content(search_query: str, should_get_only_validated: bool):
+        return (
+            Entry.objects
+            .filter(content__contains=search_query, is_validated=should_get_only_validated)
+            .distinct()
+            .all()
+        )
