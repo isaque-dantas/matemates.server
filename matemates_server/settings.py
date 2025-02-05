@@ -101,8 +101,8 @@ DATABASES = {
         'PORT': '3306',
     }
 }
-
-MEDIA_ROOT = f'{Path.home()}/PycharmProjects/matemates.server/uploads/'
+import os
+MEDIA_ROOT = f'{os.path.dirname(os.path.realpath(__file__))}/../uploads'
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
