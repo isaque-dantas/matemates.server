@@ -102,7 +102,7 @@ DATABASES = {
     }
 }
 import os
-MEDIA_ROOT = f'{os.path.dirname(os.path.realpath(__file__)).split("/")[:-2]}/uploads'
+MEDIA_ROOT = f'{os.path.dirname(os.path.realpath(__file__)).split("/")[:-2].join("/")}/uploads'
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
