@@ -11,6 +11,7 @@ urlpatterns = [
     path('entry/<int:pk>', entry.SingleEntryView.as_view()),
     path('entry_image/<int:pk>', image.ImageView.as_view(), name="entry-image"),
     path('knowledge_area', knowledge_area.KnowledgeAreaView.as_view()),
+    path('knowledge_area/<int:pk>', knowledge_area.SingleKnowledgeAreaView.as_view()),
     path('token', TokenObtainPairView.as_view()),
     path('token/refresh', TokenRefreshView.as_view()),
 ]

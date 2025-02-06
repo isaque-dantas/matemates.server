@@ -3,11 +3,13 @@ from django.db import models
 
 class KnowledgeAreaManager(models.Manager):
     @staticmethod
-    def create(**kwargs):
-        print(f'trying to create knowledge area: <{kwargs["content"]} | {kwargs["subject"]}>')
+    def create(content: str, subject: str):
+        print(f'trying to create knowledge area: <{content} | {subject}>')
 
-        knowledge_area = KnowledgeArea(content=kwargs['content'], subject=kwargs['subject'])
+        knowledge_area = KnowledgeArea(content=content, subject=subject)
         knowledge_area.save()
+
+        return knowledge_area
 
 
 class KnowledgeArea(models.Model):

@@ -12,8 +12,8 @@ class UserService:
                 InvitedEmail.objects.filter(email=validated_data['email']).exists()
         )
 
-        log.debug(f"{(validated_data['email'] == settings.ADMIN_EMAIL)=}")
-        log.debug(f"{InvitedEmail.objects.filter(email=validated_data['email']).exists()=}")
+        # log.debug(f"{(validated_data['email'] == settings.ADMIN_EMAIL)=}")
+        # log.debug(f"{InvitedEmail.objects.filter(email=validated_data['email']).exists()=}")
 
         return User.objects.create_user(**validated_data)
 

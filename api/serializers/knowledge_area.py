@@ -3,6 +3,7 @@ from rest_framework import serializers
 from api import log
 from api.models import KnowledgeArea
 from api.services.entry import EntryService
+from api.services.knowledge_area import KnowledgeAreaService
 
 
 class KnowledgeAreaSerializer(serializers.ModelSerializer):
@@ -27,3 +28,12 @@ class KnowledgeAreaSerializer(serializers.ModelSerializer):
             log.debug(f"{representation['entries']=}")
 
         return representation
+
+    def validate_content(self, content: str) -> str:
+        instance = self.instance
+
+        errors = KnowledgeAreaService.get_validation_errors_in_content(content, instance=instance)
+        if errors:
+            raise serializers.ValidationError(errors)
+
+        return content
