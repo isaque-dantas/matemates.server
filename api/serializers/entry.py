@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 import api.models
 from api import log
@@ -42,31 +43,10 @@ class EntrySerializer(serializers.ModelSerializer):
         return data
 
     def validate_content(self, value):
-        errors = []
-
-        it_is_updating_to_the_same_value = (
-                self.instance is not None
-                and
-                EntryService.parse_content(value) == self.instance.content
-        )
-
-        if EntryService.content_already_exists(value) and not it_is_updating_to_the_same_value:
-            errors.append(f"'{value}' already exists")
-
-        log.debug(f"{value=}")
-
-        stars_errors: list = EntryService.get_stars_formatting_errors(value)
-        if stars_errors:
-            errors.extend(stars_errors)
-
-        log.debug(f"{stars_errors=}")
-
-        dots_errors: list = EntryService.get_dots_formatting_errors(value)
-        if dots_errors:
-            errors.extend(dots_errors)
-
-        if errors:
-            raise serializers.ValidationError(errors)
+        try:
+            EntryService.validate_content(self.instance, value)
+        except ValidationError as err:
+            raise err
 
         return value
 

@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from api.models import KnowledgeArea
 from api.serializers.knowledge_area import KnowledgeAreaSerializer
 from api.services.knowledge_area import KnowledgeAreaService
+from api.services.user import UserService
 
 
 class KnowledgeAreaView(APIView):
@@ -16,7 +17,7 @@ class KnowledgeAreaView(APIView):
             many=True,
             context={
                 'is_knowledge_area_get': True,
-                'is_user_staff': request.user and request.user.is_staff
+                'should_get_only_validated': UserService.can_see_non_validated_entries(request.user)
             }
         )
 
@@ -58,7 +59,7 @@ class SingleKnowledgeAreaView(APIView):
             knowledge_area,
             context={
                 'is_knowledge_area_get': True,
-                'is_user_staff': request.user and request.user.is_staff
+                'should_get_only_validated': UserService.can_see_non_validated_entries(request.user)
             }
         )
 

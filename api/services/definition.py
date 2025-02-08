@@ -2,6 +2,7 @@ from rest_framework.exceptions import ValidationError
 
 from api import log
 from api.models import Definition, KnowledgeArea
+from api.services.entry import EntryService
 from api.services.knowledge_area import KnowledgeAreaService
 
 
@@ -52,3 +53,24 @@ class DefinitionService:
     def validate_knowledge_area__content(value):
         if not DefinitionService.does_knowledge_area_content_exist(value):
             raise ValidationError(f"KnowledgeArea content '{value}' does not exist in database")
+
+    @staticmethod
+    def exists(pk):
+        return Definition.objects.filter(pk=pk).exists()
+
+    @staticmethod
+    def get(pk):
+        return Definition.objects.get(pk)
+
+    @staticmethod
+    def is_parent_validated(pk):
+        return DefinitionService.get(pk).entry.is_validated
+
+    @staticmethod
+    def update(serializer):
+        instance: Definition = serializer.instance
+        data = serializer.validated_data
+
+        instance.content = data["content"]
+        instance.knowledge_area = KnowledgeAreaService.get_by_content(data["knowledge_area__content"])
+        instance.save()

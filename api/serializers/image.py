@@ -23,7 +23,7 @@ class ImageSerializer(serializers.ModelSerializer):
         }
 
     def get_url(self, image_pk):
-        relative_url = reverse('entry-image', kwargs={'pk': image_pk})
+        relative_url = reverse('entry-image-blob-file', kwargs={'pk': image_pk})
 
         if self.context:
             return self.context.get('request').build_absolute_uri(relative_url)

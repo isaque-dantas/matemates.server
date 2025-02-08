@@ -1,3 +1,5 @@
+from django.contrib.auth.models import AnonymousUser
+
 from api import log
 from api.models import User, InvitedEmail
 from matemates_server import settings
@@ -11,9 +13,6 @@ class UserService:
                 or
                 InvitedEmail.objects.filter(email=validated_data['email']).exists()
         )
-
-        # log.debug(f"{(validated_data['email'] == settings.ADMIN_EMAIL)=}")
-        # log.debug(f"{InvitedEmail.objects.filter(email=validated_data['email']).exists()=}")
 
         return User.objects.create_user(**validated_data)
 
@@ -52,3 +51,7 @@ class UserService:
 
         invited_email = InvitedEmail(email=email, user_who_invited=user_who_invited)
         invited_email.save()
+
+    @staticmethod
+    def can_see_non_validated_entries(user: AnonymousUser | User) -> bool:
+        return not user.is_authenticated or not user.is_staff

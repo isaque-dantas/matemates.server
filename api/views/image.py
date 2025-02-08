@@ -1,5 +1,6 @@
 from django.http import FileResponse
 from rest_framework import status
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -14,3 +15,11 @@ class ImageView(APIView):
 
         image = ImageService.get(pk)
         return FileResponse(image.content.open(), status=status.HTTP_200_OK)
+
+@api_view()
+def get_image_blob_file(request, pk):
+    if not ImageService.exists(pk):
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    image = ImageService.get(pk)
+    return FileResponse(image.content.open(), status=status.HTTP_200_OK)

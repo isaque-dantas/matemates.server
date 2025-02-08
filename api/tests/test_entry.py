@@ -147,7 +147,7 @@ class EntryTests(APITestCase):
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]["content"], "calculadora")
 
-    def test_put__on_happy_path__should_return_OK(self):
+    def test_put__on_happy_path__should_return_METHOD_NOT_ALLOWED(self):
         self.user_utils.set_database_environment({"admin-user": True})
         self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
 
@@ -164,7 +164,7 @@ class EntryTests(APITestCase):
             format='json'
         )
 
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
         calculadora = self.entry_utils.retrieve("calculadora")
         definitions = calculadora.definitions.all()
@@ -197,6 +197,36 @@ class EntryTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_patch__on_happy_path__should_return_NO_CONTENT(self):
+        self.user_utils.set_database_environment({"admin-user": True})
+        self.entry_utils.set_database_environment({"calculadora": True})
+
+        calculadora_id = self.entry_utils.retrieve("calculadora").id
+
+        response = self.client.patch(
+            f'{BASE_URL}/entry/{calculadora_id}',
+            headers=self.user_utils.admin_credentials,
+            format='json',
+            data={"content": "*cal.cu.la.do.ra* ma.nu.al"}
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_patch__without_data__should_return_BAD_REQUEST(self):
+        self.user_utils.set_database_environment({"admin-user": True})
+        self.entry_utils.set_database_environment({"calculadora": True})
+
+        calculadora_id = self.entry_utils.retrieve("calculadora").id
+
+        response = self.client.patch(
+            f'{BASE_URL}/entry/{calculadora_id}',
+            headers=self.user_utils.admin_credentials,
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("content", response.data)
 
 
 class EntrySerializerTestCase(APITestCase):

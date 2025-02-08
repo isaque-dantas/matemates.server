@@ -43,6 +43,34 @@ class EntryService:
         return Entry.objects.filter(content=EntryService.parse_content(content)).exists()
 
     @staticmethod
+    def validate_content(instance: Entry, value: str):
+        errors = []
+
+        it_is_updating_to_the_same_value = (
+                instance is not None
+                and
+                EntryService.parse_content(value) == instance.content
+        )
+
+        if EntryService.content_already_exists(value) and not it_is_updating_to_the_same_value:
+            errors.append(f"'{value}' already exists")
+
+        log.debug(f"{value=}")
+
+        stars_errors: list = EntryService.get_stars_formatting_errors(value)
+        if stars_errors:
+            errors.extend(stars_errors)
+
+        log.debug(f"{stars_errors=}")
+
+        dots_errors: list = EntryService.get_dots_formatting_errors(value)
+        if dots_errors:
+            errors.extend(dots_errors)
+
+        if errors:
+            raise serializers.ValidationError(errors)
+
+    @staticmethod
     def get_stars_formatting_errors(content: str) -> list:
         if " " not in content:
             return []
@@ -223,3 +251,8 @@ class EntryService:
             .distinct()
             .all()
         )
+
+    @staticmethod
+    def patch_content(instance: Entry, content: str):
+        instance.content = content
+        instance.save()

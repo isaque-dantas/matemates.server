@@ -1,4 +1,5 @@
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -6,12 +7,13 @@ from api import log
 from api.serializers.entry import EntrySerializer
 from api.services.entry import EntryService
 from api.services.knowledge_area import KnowledgeAreaService
+from api.services.user import UserService
 
 
 class EntryView(APIView):
     @staticmethod
     def get(request):
-        should_get_only_validated = not request.user.is_authenticated or not request.user.is_staff
+        should_get_only_validated = UserService.can_see_non_validated_entries(request.user)
         log.debug(f'{should_get_only_validated=}')
 
         if request.query_params and "knowledge_area" in request.query_params:
@@ -71,6 +73,8 @@ class SingleEntryView(APIView):
 
     @staticmethod
     def put(request, pk):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
         if not EntryService.exists(pk):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -86,6 +90,32 @@ class SingleEntryView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         EntryService.update(serializer)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @staticmethod
+    def patch(request, pk):
+        if not EntryService.exists(pk):
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        if not request.user.is_authenticated:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        if not request.user.is_staff:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        if "content" not in request.data:
+            return Response({"content": "Este campo é obrigatório."}, status=status.HTTP_400_BAD_REQUEST)
+
+        entry = EntryService.get(pk)
+
+        try:
+            EntryService.validate_content(entry, request.data["content"])
+        except ValidationError as err:
+            errors = {"content": str(err)}
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+        EntryService.patch_content(instance=entry, content=request.data["content"])
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
