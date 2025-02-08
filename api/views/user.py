@@ -43,7 +43,7 @@ class UserView(APIView):
             log.error(f"{serializer.errors=}")
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        user = UserService.create(serializer.validated_data)
+        user = UserService.create(serializer)
         serializer = UserSerializer(user)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)

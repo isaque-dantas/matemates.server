@@ -4,14 +4,12 @@ from rest_framework.test import APITestCase
 from api import log
 from api.models import InvitedEmail
 from api.tests import BASE_URL
-from api.tests.user_utils import UserTestsUtils
+from api.tests.user_utils import UserUtils
 from matemates_server import settings
 
 
-# TODO: add Invited Email instance to database when a user is invited to be admin
-
 class UserTests(APITestCase):
-    utils = UserTestsUtils()
+    utils = UserUtils()
 
     def test_post__on_happy_path__should_return_OK(self):
         self.utils.set_database_environment({'common-user': False})
@@ -21,8 +19,6 @@ class UserTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertNotIn('password', response.data)
         self.assertFalse(response.data['is_staff'])
-
-        self.utils.refresh_tokens()
 
     def test_post__with_non_existent_field__should_return_CREATED(self):
         self.utils.set_database_environment({'common-user': False})
@@ -34,15 +30,11 @@ class UserTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertNotIn('non_existent_field', response.data)
 
-        self.utils.refresh_tokens()
-
     def test_post__with_repeated_unique_attributes__should_return_BAD_REQUEST(self):
         self.utils.set_database_environment({'common-user': True})
 
         response = self.client.post(f'{BASE_URL}/users', data=self.utils.common_user_data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-        self.utils.refresh_tokens()
 
     def test_post__with_admin_email__should_return_CREATED(self):
         self.utils.set_database_environment({'admin-user': False})
@@ -56,8 +48,6 @@ class UserTests(APITestCase):
         self.assertIn('is_staff', response.data)
         self.assertTrue(response.data['is_staff'])
 
-        self.utils.refresh_tokens()
-
     def test_post__without_image__should_return_CREATED(self):
         self.utils.set_database_environment({'admin-user': False})
 
@@ -69,8 +59,6 @@ class UserTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIn('is_staff', response.data)
         self.assertTrue(response.data['is_staff'])
-
-        self.utils.refresh_tokens()
 
     def test_login_on_happy_path__should_return_OK(self):
         self.utils.set_database_environment({'common-user': True})
@@ -111,10 +99,8 @@ class UserTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-        edited_user = self.utils.retrieve_user('common-user')
+        edited_user = self.utils.retrieve('common-user')
         self.assertEqual(edited_user.name, edited_data['name'])
-
-        self.utils.refresh_tokens()
 
     def test_put_with_username_from_another_user__should_return_BAD_REQUEST(self):
         self.utils.set_database_environment({'admin-user': True, 'common-user': True})
@@ -124,7 +110,7 @@ class UserTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-        user = self.utils.retrieve_user(self.utils.common_user_data['username'])
+        user = self.utils.retrieve(self.utils.common_user_data['username'])
         self.assertNotEqual(user.username, self.utils.admin_user_data['username'])
 
     def test_delete_on_happy_path__should_return_NO_CONTENT(self):
@@ -133,13 +119,9 @@ class UserTests(APITestCase):
         response = self.client.delete(f'{BASE_URL}/users', headers=self.utils.common_credentials)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-        self.utils.refresh_tokens()
-
     def test_delete_without_credentials__should_return_UNAUTHORIZED(self):
         response = self.client.delete(f'{BASE_URL}/users')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-        self.utils.refresh_tokens()
 
     def test_turn_other_existent_user_admin__should_return_OK(self):
         self.utils.set_database_environment({'admin-user': True, 'common-user': True})
@@ -152,7 +134,7 @@ class UserTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-        common = self.utils.retrieve_user('common-user')
+        common = self.utils.retrieve('common-user')
         self.assertTrue(common.is_staff)
 
         self.utils.set_database_environment({'common-user': False})

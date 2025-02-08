@@ -2,7 +2,6 @@ from rest_framework.exceptions import ValidationError
 
 from api import log
 from api.models import Definition, KnowledgeArea
-from api.services.entry import EntryService
 from api.services.knowledge_area import KnowledgeAreaService
 
 

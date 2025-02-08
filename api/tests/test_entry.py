@@ -9,15 +9,18 @@ from api.serializers.entry import EntrySerializer
 from api.services.entry import EntryService
 from api.tests import BASE_URL
 from api.tests.entry_utils import EntryUtils
-from api.tests.user_utils import UserTestsUtils
+from api.tests.knowledge_area_utils import KnowledgeAreaUtils
+from api.tests.user_utils import UserUtils
 from matemates_server import settings
 
 
 class EntryTests(APITestCase):
-    user_utils = UserTestsUtils()
+    user_utils = UserUtils()
     entry_utils = EntryUtils()
+    knowledge_area_utils = KnowledgeAreaUtils()
 
     def test_post__on_happy_path__should_return_CREATED(self):
+        self.knowledge_area_utils.create_all()
         self.user_utils.set_database_environment({"admin-user": True})
         self.entry_utils.set_database_environment({"calculadora": False})
 
@@ -37,6 +40,7 @@ class EntryTests(APITestCase):
         self.assertIn(f'entry_{calculadora.pk}__image_1__.jpg', files_in_uploads_folder)
 
     def test_post__with_common_credentials__should_return_FORBIDDEN(self):
+        self.knowledge_area_utils.create_all()
         self.user_utils.set_database_environment({"common-user": True})
         self.entry_utils.set_database_environment({"calculadora": False})
 
@@ -50,6 +54,7 @@ class EntryTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_post__with_missing_stars_in_content__should_return_BAD_REQUEST(self):
+        self.knowledge_area_utils.create_all()
         self.user_utils.set_database_environment({"admin-user": True})
         self.entry_utils.set_database_environment({"angulo-reto": False})
 
@@ -63,11 +68,13 @@ class EntryTests(APITestCase):
             format='json'
         )
 
-        log.debug(f"{response.json()=}")
+        log.debug(f"{self.user_utils.admin_credentials=}")
+        log.debug(f"{response}")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_get_all__on_happy_path__should_return_OK(self):
+        self.knowledge_area_utils.create_all()
         self.user_utils.set_database_environment({"admin-user": True})
         self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
 
@@ -80,6 +87,7 @@ class EntryTests(APITestCase):
         self.assertTrue(len(response.data) == 2)
 
     def test_get_single__on_happy_path__should_return_OK(self):
+        self.knowledge_area_utils.create_all()
         self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
 
         calculadora_id = self.entry_utils.retrieve("calculadora").id
@@ -103,6 +111,7 @@ class EntryTests(APITestCase):
         self.assertIn("images", response.data)
 
     def test_get_all_from_specified_knowledge_area__on_happy_path__should_return_OK(self):
+        self.knowledge_area_utils.create_all()
         self.user_utils.set_database_environment({"admin-user": True})
         self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
 
@@ -120,6 +129,7 @@ class EntryTests(APITestCase):
         self.assertEqual(response.data[0]["id"], calculadora_id)
 
     def test_get_all_from_specified_knowledge_area__non_existent_knowledge_area__should_return_NOT_FOUND(self):
+        self.knowledge_area_utils.create_all()
         self.user_utils.set_database_environment({"admin-user": True})
         response = self.client.get(
             f'{BASE_URL}/entry?knowledge_area=non-existent-knowledge-area',
@@ -128,6 +138,7 @@ class EntryTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_all__non_logged_user__should_not_return_non_validated(self):
+        self.knowledge_area_utils.create_all()
         self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
         response = self.client.get(f'{BASE_URL}/entry')
 
@@ -135,6 +146,7 @@ class EntryTests(APITestCase):
         self.assertTrue(are_all_validated)
 
     def test_get_with_search__calc_parameter__should_return_OK(self):
+        self.knowledge_area_utils.create_all()
         self.user_utils.set_database_environment({"admin-user": True})
         self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
 
@@ -148,6 +160,7 @@ class EntryTests(APITestCase):
         self.assertEqual(response.data[0]["content"], "calculadora")
 
     def test_put__on_happy_path__should_return_METHOD_NOT_ALLOWED(self):
+        self.knowledge_area_utils.create_all()
         self.user_utils.set_database_environment({"admin-user": True})
         self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
 
@@ -166,13 +179,8 @@ class EntryTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
-        calculadora = self.entry_utils.retrieve("calculadora")
-        definitions = calculadora.definitions.all()
-
-        self.assertEqual(definitions[0].content, new_definitions[0]["content"])
-        self.assertEqual(definitions[0].knowledge_area.content, new_definitions[0]["knowledge_area__content"])
-
     def test_delete__on_happy_path__should_return_NO_CONTENT(self):
+        self.knowledge_area_utils.create_all()
         self.user_utils.set_database_environment({"admin-user": True})
         self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": False})
 
@@ -188,6 +196,7 @@ class EntryTests(APITestCase):
         self.assertFalse(Definition.objects.filter(entry__id=calculadora_id).exists())
 
     def test_delete__non_existent_entry__should_return_NOT_FOUND(self):
+        self.knowledge_area_utils.create_all()
         self.user_utils.set_database_environment({"admin-user": True})
         self.entry_utils.set_database_environment({"calculadora": False})
 
@@ -199,6 +208,7 @@ class EntryTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_patch__on_happy_path__should_return_NO_CONTENT(self):
+        self.knowledge_area_utils.create_all()
         self.user_utils.set_database_environment({"admin-user": True})
         self.entry_utils.set_database_environment({"calculadora": True})
 
@@ -214,6 +224,7 @@ class EntryTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_patch__without_data__should_return_BAD_REQUEST(self):
+        self.knowledge_area_utils.create_all()
         self.user_utils.set_database_environment({"admin-user": True})
         self.entry_utils.set_database_environment({"calculadora": True})
 
@@ -230,10 +241,12 @@ class EntryTests(APITestCase):
 
 
 class EntrySerializerTestCase(APITestCase):
-    user_utils = UserTestsUtils()
+    user_utils = UserUtils()
     entry_utils = EntryUtils()
+    knowledge_area_utils = KnowledgeAreaUtils()
 
     def test_is_valid__on_happy_path__should_return_true(self):
+        self.knowledge_area_utils.create_all()
         self.user_utils.set_database_environment({"admin-user": True})
         self.entry_utils.set_database_environment({"angulo-reto": False})
 
@@ -241,6 +254,7 @@ class EntrySerializerTestCase(APITestCase):
         self.assertTrue(serializer.is_valid())
 
     def test_is_valid__duplicated_entry__should_return_false(self):
+        self.knowledge_area_utils.create_all()
         self.user_utils.set_database_environment({"admin-user": True})
         self.entry_utils.set_database_environment({"angulo-reto": True})
 
@@ -248,6 +262,7 @@ class EntrySerializerTestCase(APITestCase):
         self.assertFalse(serializer.is_valid())
 
     def test_is_valid__definitions_with_non_existent_knowledge_area__should_return_false(self):
+        self.knowledge_area_utils.create_all()
         invalid_data = self.entry_utils.get_data("calculadora")
         invalid_data["definitions"] = [
             {
@@ -264,6 +279,7 @@ class EntrySerializerTestCase(APITestCase):
         self.assertFalse(serializer.is_valid())
 
     def test_is_valid__no_main_term_on_content__should_return_false(self):
+        self.knowledge_area_utils.create_all()
         self.user_utils.set_database_environment({"admin-user": True})
         self.entry_utils.set_database_environment({"angulo-reto": False})
 
@@ -274,6 +290,7 @@ class EntrySerializerTestCase(APITestCase):
         self.assertFalse(serializer.is_valid())
 
     def test_is_valid__space_inside_main_term_on_content__should_return_false(self):
+        self.knowledge_area_utils.create_all()
         self.entry_utils.set_database_environment({"angulo-reto": False})
 
         data = self.entry_utils.get_data("angulo-reto")
@@ -283,6 +300,7 @@ class EntrySerializerTestCase(APITestCase):
         self.assertFalse(serializer.is_valid())
 
     def test_is_valid__dot_on_start_and_end_of_content__should_return_false(self):
+        self.knowledge_area_utils.create_all()
         self.entry_utils.set_database_environment({"angulo-reto": False})
 
         data = self.entry_utils.get_data("angulo-reto")
@@ -296,6 +314,7 @@ class EntrySerializerTestCase(APITestCase):
         self.assertEqual(len(serializer.errors["content"]), 3)
 
     def test_is_valid__dot_in_side_of_star_in_content__should_return_false(self):
+        self.knowledge_area_utils.create_all()
         self.entry_utils.set_database_environment({"angulo-reto": False})
 
         data = self.entry_utils.get_data("angulo-reto")
@@ -306,10 +325,12 @@ class EntrySerializerTestCase(APITestCase):
 
 
 class EntryServiceTestCase(APITestCase):
-    user_utils = UserTestsUtils()
+    user_utils = UserUtils()
     entry_utils = EntryUtils()
+    knowledge_area_utils = KnowledgeAreaUtils()
 
     def test_get_all_related_to_knowledge_area__on_happy_path__should_not_return_duplicates(self):
+        self.knowledge_area_utils.create_all()
         self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
         entries = EntryService.get_all_related_to_knowledge_area("álgebra", False)
 

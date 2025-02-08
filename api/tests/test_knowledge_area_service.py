@@ -3,11 +3,11 @@ from rest_framework.test import APITestCase
 from api.services.knowledge_area import KnowledgeAreaService
 from api.tests.entry_utils import EntryUtils
 from api.tests.knowledge_area_utils import KnowledgeAreaUtils
-from api.tests.user_utils import UserTestsUtils
+from api.tests.user_utils import UserUtils
 
 
 class KnowledgeAreaTests(APITestCase):
-    user_utils = UserTestsUtils()
+    user_utils = UserUtils()
     entry_utils = EntryUtils()
     knowledge_area_utils = KnowledgeAreaUtils()
 
@@ -26,7 +26,7 @@ class KnowledgeAreaTests(APITestCase):
 
         errors = KnowledgeAreaService.get_validation_errors_in_content(
             'estatística',
-            self.knowledge_area_utils.retrieve("estatística")
+            self.knowledge_area_utils.retrieve("estatistica")
         )
 
         self.assertEqual(errors, [])
@@ -36,7 +36,7 @@ class KnowledgeAreaTests(APITestCase):
 
         errors = KnowledgeAreaService.get_validation_errors_in_content(
             'álgebra',
-            self.knowledge_area_utils.retrieve("estatística")
+            self.knowledge_area_utils.retrieve("estatistica")
         )
 
         self.assertEqual(errors, ['a área do conhecimento \'álgebra\' já existe.'])

@@ -7,14 +7,19 @@ from matemates_server import settings
 
 class UserService:
     @staticmethod
-    def create(validated_data):
-        validated_data['is_staff'] = (
-                validated_data['email'] == settings.ADMIN_EMAIL
-                or
-                InvitedEmail.objects.filter(email=validated_data['email']).exists()
-        )
+    def create(serializer):
+        validated_data = serializer.validated_data
 
-        return User.objects.create_user(**validated_data)
+        data = {
+            **validated_data,
+            'is_staff': (
+                    validated_data['email'] == settings.ADMIN_EMAIL
+                    or
+                    InvitedEmail.objects.filter(email=validated_data['email']).exists()
+            )
+        }
+
+        return User.objects.create_user(**data)
 
     @staticmethod
     def update(instance, validated_data):

@@ -1,16 +1,15 @@
-from django.http import HttpResponse
 from rest_framework import status
-from rest_framework.response import Response
 from rest_framework.test import APITestCase
 
 from api.tests import BASE_URL
 from api.tests.entry_utils import EntryUtils
 from api.tests.knowledge_area_utils import KnowledgeAreaUtils
-from api.tests.user_utils import UserTestsUtils
+from api.tests.request_body import RequestBody
+from api.tests.user_utils import UserUtils
 
 
 class KnowledgeAreaTests(APITestCase):
-    user_utils = UserTestsUtils()
+    user_utils = UserUtils()
     entry_utils = EntryUtils()
     knowledge_area_utils = KnowledgeAreaUtils()
 
@@ -23,7 +22,7 @@ class KnowledgeAreaTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), len(self.knowledge_area_utils.knowledge_areas))
+        self.assertEqual(len(response.data), len(RequestBody.get_entity_keys("knowledge_area")))
         self.assertIn("entries", response.data[0])
         self.assertNotEqual(len(response.data[0]["entries"]), 0)
 
@@ -73,13 +72,13 @@ class KnowledgeAreaTests(APITestCase):
 
         response = self.client.put(
             f'{BASE_URL}/knowledge_area/{pk}',
-            data=self.knowledge_area_utils.get_data("estatistica"),
+            data=data,
             format='json',
             headers=self.user_utils.admin_credentials
         )
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertIsNotNone(self.knowledge_area_utils.get(pk))
+        self.assertIsNotNone(self.knowledge_area_utils.exists("estatistica"))
 
     def test_delete__on_happy_path__should_return_NO_CONTENT(self):
         self.user_utils.set_database_environment({"admin-user": True})
@@ -94,4 +93,4 @@ class KnowledgeAreaTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertFalse(self.knowledge_area_utils.exists(pk))
+        self.assertFalse(self.knowledge_area_utils.exists("estatistica"))

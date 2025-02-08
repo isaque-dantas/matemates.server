@@ -1,98 +1,39 @@
 from rest_framework.test import APIClient
 
 import api.models
+from api.models import User
 from api.serializers.user import UserSerializer
 from api.services.user import UserService
 from api.tests import BASE_URL, base64_encoded_files
+from api.tests.database_utils import DatabaseUtils
+from api.tests.request_body import RequestBody
 from matemates_server import settings
 
 
-class UserTestsUtils:
+class UserUtils(DatabaseUtils):
     def __init__(self):
+        super().__init__(User)
         self.client = APIClient()
 
-    common_user_data = {
-        "name": "Common User",
-        "email": "common-user@email.com",
-        "password": "pass",
-        "username": "common-user",
-        "profile_image_base64": base64_encoded_files.DOG
-    }
-
-    admin_user_data = {
-        "name": "Admin User",
-        "email": settings.ADMIN_EMAIL,
-        "password": "pass",
-        "username": "admin-user",
-        "profile_image_base64": base64_encoded_files.DOG
-    }
-
-    _credentials_headers = {
-        admin_user_data['username']: None,
-        common_user_data['username']: None
-    }
-
-    _users_data = {
-        admin_user_data['username']: admin_user_data,
-        common_user_data['username']: common_user_data
-    }
-
-    def set_database_environment(self, environment: dict[str, bool] = None):
-        environment = environment or {'common-user': False, 'admin-user': False}
-        actions = {
-            True: lambda u: self._create_user_if_doesnt_exist(u),
-            False: lambda u: self._delete_user_if_exists(u),
-        }
-
-        self.refresh_tokens()
-
-        for username, must_create in environment.items():
-            actions[must_create](username)
-
-    def retrieve_user(self, username: str = None) -> api.models.User:
-        username = username or self.common_user_data["username"]
-        return api.models.User.objects.get(username=username)
-
-    def _does_user_exist(self, username: str = None) -> bool:
-        username = username or self.common_user_data["username"]
-        return api.models.User.objects.filter(username=username).exists()
-
-    def _create_user_if_doesnt_exist(self, username: str):
-        if self._does_user_exist(username):
-            return None
-
-        serializer = UserSerializer(data=self._users_data[username])
-        serializer.is_valid(raise_exception=True)
-        UserService.create(serializer.validated_data)
-
-    def _delete_user_if_exists(self, username: str):
-        if not self._does_user_exist(username):
-            return None
-
-        user = self.retrieve_user(username)
-        user.delete()
+        self.common_user_data = RequestBody.get_data("user", "common-user")
+        self.admin_user_data = RequestBody.get_data("user", "admin-user")
 
     @property
     def common_credentials(self):
-        return self.get_credentials(self.common_user_data['username'])
+        return self.get_credentials("common-user")
 
     @property
     def admin_credentials(self):
-        return self.get_credentials(self.admin_user_data['username'])
+        return self.get_credentials("admin-user")
 
     def get_credentials(self, username: str):
-        if self._credentials_headers[username]:
-            return self._credentials_headers[username]
+        if username == "admin-user":
+            login_data = self.admin_user_login_data
+        else:
+            login_data = self.common_user_login_data
 
-        login_data = self.common_user_login_data if username == 'common-user' else self.admin_user_login_data
         response = self.client.post(f'{BASE_URL}/token', login_data)
-
-        self._credentials_headers[username] = {"Authorization": f'Bearer {response.data["access"]}'}
-        return self._credentials_headers[username]
-
-    def refresh_tokens(self):
-        self._credentials_headers['admin-user'] = None
-        self._credentials_headers['common-user'] = None
+        return {"Authorization": f'Bearer {response.data["access"]}'}
 
     @property
     def common_user_login_data(self):
@@ -107,3 +48,6 @@ class UserTestsUtils:
             "username": self.admin_user_data["username"],
             "password": self.admin_user_data["password"]
         }
+
+    def get_entity_query_parameters_from_data_identifier(self, data_identifier: str):
+        return {"username": data_identifier}

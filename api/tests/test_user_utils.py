@@ -1,15 +1,15 @@
 from rest_framework.test import APITestCase
 
-from .user_utils import UserTestsUtils
+from .user_utils import UserUtils
 
 
-class UserUtils(APITestCase):
-    utils = UserTestsUtils()
+class TestUserUtils(APITestCase):
+    utils = UserUtils()
 
     def test_retrieve_user__should_be_equal_to_data_dictionary(self):
         self.utils.set_database_environment({'admin-user': False, 'common-user': True})
 
-        user = self.utils.retrieve_user()
+        user = self.utils.retrieve("common-user")
         self.assertEqual(user.username, self.utils.common_user_data['username'])
 
     def test_get_credentials__should_return_access_token(self):
