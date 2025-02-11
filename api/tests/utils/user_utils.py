@@ -1,13 +1,9 @@
 from rest_framework.test import APIClient
 
-import api.models
 from api.models import User
-from api.serializers.user import UserSerializer
-from api.services.user import UserService
-from api.tests import BASE_URL, base64_encoded_files
-from api.tests.database_utils import DatabaseUtils
-from api.tests.request_body import RequestBody
-from matemates_server import settings
+from api.tests import BASE_URL
+from api.tests.utils.database_utils import DatabaseUtils
+from api.tests.utils.request_body import RequestBody
 
 
 class UserUtils(DatabaseUtils):

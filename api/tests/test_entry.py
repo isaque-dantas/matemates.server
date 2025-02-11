@@ -8,9 +8,9 @@ from api.models import Definition, Entry
 from api.serializers.entry import EntrySerializer
 from api.services.entry import EntryService
 from api.tests import BASE_URL
-from api.tests.entry_utils import EntryUtils
-from api.tests.knowledge_area_utils import KnowledgeAreaUtils
-from api.tests.user_utils import UserUtils
+from api.tests.utils.entry_utils import EntryUtils
+from api.tests.utils.knowledge_area_utils import KnowledgeAreaUtils
+from api.tests.utils.user_utils import UserUtils
 from matemates_server import settings
 
 
@@ -337,3 +337,22 @@ class EntryServiceTestCase(APITestCase):
         entries_ids = [entry.pk for entry in entries]
         are_there_any_duplicates = any([entries_ids.count(entry_id) >= 2 for entry_id in entries_ids])
         self.assertFalse(are_there_any_duplicates)
+
+    def test_search_by_content__calc__should_return_one_entry(self):
+        self.knowledge_area_utils.create_all()
+        self.entry_utils.set_database_environment({"angulo-reto": True, "calculadora": True})
+
+        entries = EntryService.search_by_content("calc", False)
+
+        self.assertEqual(len(entries), 1)
+        self.assertEqual(entries[0].content, "calculadora")
+
+    def test_search_by_content__a__should_return_two_entries(self):
+        self.knowledge_area_utils.create_all()
+        self.entry_utils.set_database_environment({"angulo-reto": True, "calculadora": True})
+
+        entries = EntryService.search_by_content("o", False)
+
+        self.assertEqual(len(entries), 2)
+        self.assertEqual(entries[0].content, "ângulo reto")
+        self.assertEqual(entries[1].content, "calculadora")

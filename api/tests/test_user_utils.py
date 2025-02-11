@@ -1,6 +1,6 @@
 from rest_framework.test import APITestCase
 
-from .user_utils import UserUtils
+from api.tests.utils.user_utils import UserUtils
 
 
 class TestUserUtils(APITestCase):

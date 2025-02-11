@@ -197,6 +197,7 @@ class EntryService:
 
     @staticmethod
     def delete(pk: int):
+
         EntryService.get(pk).delete()
 
     @staticmethod

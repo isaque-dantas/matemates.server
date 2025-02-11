@@ -1,6 +1,6 @@
 from api.models.knowledge_area import KnowledgeArea
-from api.tests.database_utils import DatabaseUtils
-from api.tests.request_body import RequestBody
+from api.tests.utils.database_utils import DatabaseUtils
+from api.tests.utils.request_body import RequestBody
 
 
 class KnowledgeAreaUtils(DatabaseUtils):

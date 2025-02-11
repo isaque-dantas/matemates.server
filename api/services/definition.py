@@ -1,3 +1,4 @@
+import django.db.models
 from rest_framework.exceptions import ValidationError
 
 from api import log
@@ -59,7 +60,7 @@ class DefinitionService:
 
     @staticmethod
     def get(pk):
-        return Definition.objects.get(pk)
+        return Definition.objects.get(pk=pk)
 
     @staticmethod
     def is_parent_validated(pk):
@@ -67,9 +68,19 @@ class DefinitionService:
 
     @staticmethod
     def update(serializer):
-        instance: Definition = serializer.instance
+        instance: django.db.models.Model = serializer.instance
         data = serializer.validated_data
+
+        log.debug(f"{data=}")
+        log.debug(f"{serializer.data=}")
+        log.debug(f"{serializer.initial_data=}")
+        log.debug(f"{serializer.errors=}")
+        log.debug(f"{instance=}")
 
         instance.content = data["content"]
         instance.knowledge_area = KnowledgeAreaService.get_by_content(data["knowledge_area__content"])
         instance.save()
+
+    @staticmethod
+    def delete(pk):
+        Definition.objects.filter(pk=pk).delete()

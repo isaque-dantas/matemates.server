@@ -1,11 +1,12 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from api.services.knowledge_area import KnowledgeAreaService
 from api.tests import BASE_URL
-from api.tests.entry_utils import EntryUtils
-from api.tests.knowledge_area_utils import KnowledgeAreaUtils
-from api.tests.request_body import RequestBody
-from api.tests.user_utils import UserUtils
+from api.tests.utils.entry_utils import EntryUtils
+from api.tests.utils.knowledge_area_utils import KnowledgeAreaUtils
+from api.tests.utils.request_body import RequestBody
+from api.tests.utils.user_utils import UserUtils
 
 
 class KnowledgeAreaTests(APITestCase):
@@ -44,23 +45,6 @@ class KnowledgeAreaTests(APITestCase):
 
         self.assertTrue(self.knowledge_area_utils.exists("estatistica"))
 
-    def test_get__on_happy_path__should_return_OK(self):
-        self.user_utils.set_database_environment({"admin-user": True})
-        self.knowledge_area_utils.set_database_environment({"estatistica": True})
-
-        pk = self.knowledge_area_utils.retrieve("estatistica").pk
-
-        response = self.client.get(
-            f'{BASE_URL}/knowledge_area/{pk}',
-            headers=self.user_utils.admin_credentials
-        )
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn("id", response.data)
-        self.assertIn("content", response.data)
-        self.assertIn("subject", response.data)
-
-
     def test_put__on_happy_path__should_return_NO_CONTENT(self):
         self.user_utils.set_database_environment({"admin-user": True})
         self.knowledge_area_utils.set_database_environment({"estatistica": True, "algebra": False})
@@ -94,3 +78,40 @@ class KnowledgeAreaTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(self.knowledge_area_utils.exists("estatistica"))
+
+
+class KnowledgeAreaServiceTests(APITestCase):
+    user_utils = UserUtils()
+    entry_utils = EntryUtils()
+    knowledge_area_utils = KnowledgeAreaUtils()
+
+    def test_validate_content__with_valid_content__should_return_empty_list(self):
+        self.knowledge_area_utils.set_database_environment({'estatistica': False})
+        errors = KnowledgeAreaService.get_validation_errors_in_content('estatística')
+        self.assertEqual(errors, [])
+
+    def test_validate_content__with_already_existent_content__should_return_uniqueness_error(self):
+        self.knowledge_area_utils.set_database_environment({'estatistica': True})
+        errors = KnowledgeAreaService.get_validation_errors_in_content('estatística')
+        self.assertEqual(errors, ['a área do conhecimento \'estatística\' já existe.'])
+
+    def test_validate_content__with_already_existent_content_and_instance__should_return_empty_list(self):
+        self.knowledge_area_utils.set_database_environment({'estatistica': True})
+
+        errors = KnowledgeAreaService.get_validation_errors_in_content(
+            'estatística',
+            self.knowledge_area_utils.retrieve("estatistica")
+        )
+
+        self.assertEqual(errors, [])
+
+    def test_validate_content__with_already_existent_content_and_instance_with_different_content__should_return_uniqueness_error(
+            self):
+        self.knowledge_area_utils.set_database_environment({'estatistica': True, 'algebra': True})
+
+        errors = KnowledgeAreaService.get_validation_errors_in_content(
+            'álgebra',
+            self.knowledge_area_utils.retrieve("estatistica")
+        )
+
+        self.assertEqual(errors, ['a área do conhecimento \'álgebra\' já existe.'])

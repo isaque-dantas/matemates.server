@@ -1,4 +1,4 @@
-from api.tests import base64_encoded_files
+from api.tests.utils import base64_encoded_files
 from matemates_server import settings
 
 

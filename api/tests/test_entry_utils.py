@@ -1,8 +1,8 @@
 from rest_framework.test import APITestCase
 
-from api.tests.entry_utils import EntryUtils
-from api.tests.knowledge_area_utils import KnowledgeAreaUtils
-from api.tests.user_utils import UserUtils
+from api.tests.utils.entry_utils import EntryUtils
+from api.tests.utils.knowledge_area_utils import KnowledgeAreaUtils
+from api.tests.utils.user_utils import UserUtils
 
 
 class EntryUtilsTests(APITestCase):

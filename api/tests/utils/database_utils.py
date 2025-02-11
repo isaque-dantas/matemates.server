@@ -14,7 +14,7 @@ from api.services.image import ImageService
 from api.services.knowledge_area import KnowledgeAreaService
 from api.services.question import QuestionService
 from api.services.user import UserService
-from api.tests.request_body import RequestBody
+from api.tests.utils.request_body import RequestBody
 from abc import ABC, abstractmethod
 
 
@@ -59,14 +59,14 @@ class DatabaseUtils(ABC):
         for key in RequestBody.get_entity_keys(self.__entity_name):
             self.create(key)
 
-    def set_database_environment(self, environment: dict[str, bool]):
+    def set_database_environment(self, environment: dict[str, bool], force_operations=False):
         actions = {
-            True: lambda e: self.create(e),
-            False: lambda e: self.delete(e),
+            True: lambda e: self.create(e, force_operations),
+            False: lambda e: self.delete(e, force_operations),
         }
 
-        for content, must_create in environment.items():
-            actions[must_create](content)
+        for data_identifier, must_create in environment.items():
+            actions[must_create](data_identifier)
 
     @abstractmethod
     def get_entity_query_parameters_from_data_identifier(self, data_identifier: str | int) -> dict:
@@ -80,9 +80,12 @@ class DatabaseUtils(ABC):
         query_parameters = self.get_entity_query_parameters_from_data_identifier(data_identifier)
         return self.__entity.objects.filter(**query_parameters).exists()
 
-    def create(self, data_identifier: str):
-        if self.exists(data_identifier):
+    def create(self, data_identifier: str, force_operations: bool = False):
+        if self.exists(data_identifier) and not force_operations:
             return None
+
+        if force_operations:
+            self.delete(data_identifier)
 
         log.debug(f"Creating {self.__entity_name} identified by '{data_identifier}'")
 
@@ -91,9 +94,12 @@ class DatabaseUtils(ABC):
         serializer.is_valid(raise_exception=True)
         self.__service.create(serializer)
 
-    def delete(self, data_identifier: str):
-        if not self.exists(data_identifier):
+    def delete(self, data_identifier: str, force_operations: bool = False):
+        if not self.exists(data_identifier) and not force_operations:
             return None
+
+        if force_operations:
+            self.create(data_identifier)
 
         query_parameters = self.get_entity_query_parameters_from_data_identifier(data_identifier)
         self.__entity.objects.filter(**query_parameters).delete()

@@ -25,8 +25,8 @@ class EntrySerializer(serializers.ModelSerializer):
     def to_internal_value(self, data):
         internal_value = super().to_internal_value(data)
 
-        log.debug(f'{internal_value=}')
-        log.debug(f'{data=}')
+        # log.debug(f'{internal_value=}')
+        # log.debug(f'{data=}')
 
         return {
             "content": internal_value["content"].strip(),

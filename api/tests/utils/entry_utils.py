@@ -1,6 +1,6 @@
 from api.models.entry import Entry
-from api.tests.database_utils import DatabaseUtils
-from api.tests.knowledge_area_utils import KnowledgeAreaUtils
+from api.tests.utils.database_utils import DatabaseUtils
+from api.tests.utils.knowledge_area_utils import KnowledgeAreaUtils
 
 
 class EntryUtils(DatabaseUtils):

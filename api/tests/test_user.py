@@ -4,7 +4,7 @@ from rest_framework.test import APITestCase
 from api import log
 from api.models import InvitedEmail
 from api.tests import BASE_URL
-from api.tests.user_utils import UserUtils
+from api.tests.utils.user_utils import UserUtils
 from matemates_server import settings
 
 

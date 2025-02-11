@@ -59,4 +59,4 @@ class UserService:
 
     @staticmethod
     def can_see_non_validated_entries(user: AnonymousUser | User) -> bool:
-        return not user.is_authenticated or not user.is_staff
+        return user.is_authenticated and user.is_staff
