@@ -1,9 +1,11 @@
 from django.urls import reverse
 from rest_framework import serializers
+from api import log
 
 from api.models import Image
 from api.serializers.custom_list_serializer import CustomListSerializer
 from drf_base64.fields import Base64ImageField
+
 
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -12,7 +14,7 @@ class ImageSerializer(serializers.ModelSerializer):
         list_serializer_class = CustomListSerializer
 
     id = serializers.IntegerField(read_only=True, required=False)
-    base64_image = Base64ImageField(source='content')
+    base64_image = Base64ImageField(source='content', required=False)
     caption = serializers.CharField(required=False)
 
     def to_representation(self, instance):
@@ -29,6 +31,14 @@ class ImageSerializer(serializers.ModelSerializer):
             return self.context.get('request').build_absolute_uri(relative_url)
 
         return relative_url
+
+    def validate(self, attrs):
+        is_update = self.context.get('is_update')
+
+        if not is_update and 'content' not in attrs:
+            raise serializers.ValidationError('O conteúdo da imagem é obrigatório.')
+
+        return attrs
 
     def __repr__(self):
         return self.caption

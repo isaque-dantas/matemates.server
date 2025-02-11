@@ -180,7 +180,7 @@ class EntryService:
             if data["base64_image"] == ''
         ]
 
-        log.debug(f"{entry_data['images']=}")
+        # log.debug(f"{entry_data['images']=}")
         log.debug(f"{images_ids_that_must_not_be_updated=}")
 
         entry_data["images"] = [
