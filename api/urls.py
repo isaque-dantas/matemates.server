@@ -42,6 +42,7 @@ urlpatterns = (
         ]
         + user_urls
         + entry_urls
+        + question_urls
         + image_urls
         + knowledge_area_urls
         + definition_urls

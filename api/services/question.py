@@ -12,3 +12,28 @@ class QuestionService:
     @staticmethod
     def create(data, entry):
         return Question(**data, entry=entry)
+
+    @staticmethod
+    def get(pk):
+        return Question.objects.get(pk=pk)
+
+    @staticmethod
+    def exists(pk):
+        return Question.objects.filter(pk=pk).exists()
+
+    @staticmethod
+    def delete(pk):
+        Question.objects.filter(id=pk).delete()
+
+    @staticmethod
+    def is_parent_validated(pk):
+        return QuestionService.get(pk).entry.is_validated
+
+    @staticmethod
+    def update(serializer):
+        data = serializer.data
+        instance: Question = serializer.instance
+
+        instance.statement = data["statement"]
+        instance.answer = data["answer"]
+        instance.save()

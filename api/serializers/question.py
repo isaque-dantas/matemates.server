@@ -11,8 +11,9 @@ class QuestionSerializer(serializers.ModelSerializer):
         list_serializer_class = CustomListSerializer
 
     def to_representation(self, instance: Question):
-        return {
-            "id": instance.pk,
-            "statement": instance.statement,
-            "answer": instance.answer,
-        }
+        representation = super().to_representation(instance)
+
+        if isinstance(instance, Question):
+            representation.update({"id": instance.pk})
+
+        return representation

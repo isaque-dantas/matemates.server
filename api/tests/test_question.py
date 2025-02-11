@@ -1,6 +1,5 @@
 from rest_framework.test import APITestCase
 from django.test import TestCase
-from api import log
 
 from api.serializers.question import QuestionSerializer
 from api.services.question import QuestionService
@@ -21,9 +20,13 @@ class TestQuestionView(APITestCase):
     def test_get__on_happy_path__should_return_OK(self):
         self.knowledge_area_utils.create_all()
         self.entry_utils.set_database_environment({"calculadora": True}, force_operations=True)
+        self.user_utils.set_database_environment({"admin-user": True})
 
         pk = self.question_utils.get_pk_from_data_identifier("calculadora-0")
-        response = self.client.get(f"{BASE_URL}/question/{pk}")
+        response = self.client.get(
+            f"{BASE_URL}/question/{pk}",
+            headers=self.user_utils.admin_credentials
+        )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -39,6 +42,17 @@ class TestQuestionSerializer(TestCase):
         serializer.is_valid()
         data = serializer.data
 
+        self.assertIn("statement", data)
+        self.assertIn("answer", data)
+
+    def test_to_representation__from_instance__should_return_dict(self):
+        self.knowledge_area_utils.create_all()
+        self.entry_utils.set_database_environment({"calculadora": True}, force_operations=True)
+        question = self.question_utils.retrieve("calculadora-0")
+
+        serializer = QuestionSerializer(question)
+        data = serializer.data
+
         self.assertIn("id", data)
         self.assertIn("statement", data)
         self.assertIn("answer", data)
@@ -47,17 +61,14 @@ class TestQuestionSerializer(TestCase):
         self.knowledge_area_utils.create_all()
 
         question_data = self.entry_utils.get_data("calculadora")["questions"][0]
-        question_data["content"] = "Outra definição, que está editada, obviamente."
+        question_data["statement"] = "Pergunta maravilhosa?"
 
         serializer = QuestionSerializer(data=question_data)
         self.assertTrue(serializer.is_valid())
 
-    def test_validate__non_existent_knowledge_area__should_return_invalid(self):
+    def test_validate__missing_attributes__should_return_invalid(self):
         serializer = QuestionSerializer(
-            data={
-                "content": "Esta definição está mentindo.",
-                "knowledge_area__content": "inexistente"
-            }
+            data={"statement": "Por que você não escreve a resposta, também?"}
         )
 
         self.assertFalse(serializer.is_valid())
@@ -75,14 +86,14 @@ class TestQuestionService(TestCase):
 
         serializer = QuestionSerializer(
             self.question_utils.retrieve("calculadora-0"),
-            data={"content": "Definição editada", "knowledge_area__content": "cinemática"}
+            data={"statement": "Pergunta maravilhosa?", "answer": "Com certeza."}
         )
 
         serializer.is_valid()
         QuestionService.update(serializer)
-        content_after_update = self.question_utils.retrieve("calculadora-0").content
+        statement_after_update = self.question_utils.retrieve("calculadora-0").statement
 
-        self.assertEqual("Definição editada", content_after_update)
+        self.assertEqual("Pergunta maravilhosa?", statement_after_update)
 
     def test_delete__on_happy_path__should_delete_in_database(self):
         self.knowledge_area_utils.create_all()
