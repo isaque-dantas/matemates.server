@@ -16,7 +16,7 @@ class DefinitionListSerializer(CustomListSerializer):
 class DefinitionSerializer(ModelSerializer):
     class Meta:
         model = Definition
-        fields = ['content', 'knowledge_area__content']
+        fields = ['id', 'content', 'knowledge_area__content']
         list_serializer_class = DefinitionListSerializer
 
     knowledge_area__content = StringRelatedField()
@@ -48,9 +48,7 @@ class DefinitionSerializer(ModelSerializer):
     def to_representation(self, instance):
         log.debug(f"instance in DefinitionSerializer: {instance}")
         return {
+            "id": instance.id,
             "content": instance.content,
-            "knowledge_area": {
-                "content": instance.knowledge_area.content,
-                "subject": instance.knowledge_area.subject
-            }
+            "knowledge_area": instance.knowledge_area.content,
         }

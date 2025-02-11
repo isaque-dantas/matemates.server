@@ -41,7 +41,6 @@ class KnowledgeAreaTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIn('id', response.data)
         self.assertIn('content', response.data)
-        self.assertIn('subject', response.data)
 
         self.assertTrue(self.knowledge_area_utils.exists("estatistica"))
 

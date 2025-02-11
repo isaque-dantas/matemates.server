@@ -21,13 +21,11 @@ class TestDefinitionView(APITestCase):
     def test_get__on_happy_path__should_return_OK(self):
         self.knowledge_area_utils.create_all()
         self.entry_utils.set_database_environment({"calculadora": True}, force_operations=True)
-        self.user_utils.set_database_environment({"admin-user": True}, force_operations=True)
 
         pk = self.definition_utils.get_pk_from_data_identifier("calculadora-0")
 
         response = self.client.get(
-            f"{BASE_URL}/definition/{pk}",
-            headers=self.user_utils.admin_credentials
+            f"{BASE_URL}/definition/{pk}"
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)

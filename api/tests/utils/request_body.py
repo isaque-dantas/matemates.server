@@ -18,7 +18,7 @@ class RequestBody:
                     {"caption": "outro ângulo reto", "base64_image": base64_encoded_files.ANGULO_RETO, "id": None},
                 ],
                 "questions": [
-                    {"statement": "Um quadrado tem ângulos retos?", "answer": "Sim.", "explanation": "Porque sim."},
+                    {"statement": "Um quadrado tem ângulos retos?", "answer": "Sim."},
                 ],
             },
             "calculadora": {
@@ -37,15 +37,15 @@ class RequestBody:
                 ],
                 "questions": [
                     {"statement": "Quantas galinhas um ovo consegue pôr?",
-                     "answer": "Aproximadamente o que uma calculadora pode computar.", "explanation": "Porque sim."},
+                     "answer": "Aproximadamente o que uma calculadora pode computar."},
                 ],
             }
         },
         "knowledge_area": {
-            "estatistica": {"content": "estatística", "subject": "matemática"},
-            "algebra": {"content": "álgebra", "subject": "matemática"},
-            "calculo": {"content": "cálculo", "subject": "matemática"},
-            "cinematica": {"content": "cinemática", "subject": "física"},
+            "estatistica": {"content": "estatística"},
+            "algebra": {"content": "álgebra"},
+            "calculo": {"content": "cálculo"},
+            "cinematica": {"content": "cinemática"},
         },
         "user": {
             "common-user": {

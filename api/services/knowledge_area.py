@@ -13,7 +13,7 @@ class KnowledgeAreaService:
     @staticmethod
     def create(serializer):
         data = serializer.validated_data
-        return KnowledgeArea.objects.create(content=data["content"], subject=data["subject"])
+        return KnowledgeArea.objects.create(content=data["content"])
 
     @staticmethod
     def get_validation_errors_in_content(content: str, instance: KnowledgeArea | None = None):
@@ -45,5 +45,4 @@ class KnowledgeAreaService:
         data = serializer.validated_data
 
         instance.content = data["content"]
-        instance.subject = data["subject"]
         instance.save()
