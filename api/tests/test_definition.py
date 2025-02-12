@@ -12,7 +12,7 @@ from api.tests import BASE_URL
 from rest_framework import status
 
 
-class TestDefinitionView(APITestCase):
+class DefinitionViewTestCase(APITestCase):
     user_utils = UserUtils()
     entry_utils = EntryUtils()
     definition_utils = DefinitionUtils()
@@ -31,15 +31,23 @@ class TestDefinitionView(APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn("content", response.data)
-        self.assertIn("knowledge_area", response.data)
 
 
-class TestDefinitionSerializer(TestCase):
+class DefinitionSerializerTestCase(TestCase):
     user_utils = UserUtils()
     entry_utils = EntryUtils()
     knowledge_area_utils = KnowledgeAreaUtils()
     definition_utils = DefinitionUtils()
+
+    def test_to_representation__on_happy_path__should_return_dict(self):
+        self.knowledge_area_utils.create_all()
+        self.entry_utils.set_database_environment({"calculadora": True}, force_operations=True)
+        definition = self.definition_utils.retrieve("calculadora-0")
+        serializer = DefinitionSerializer(definition)
+        data = serializer.data
+
+        self.assertIn("content", data)
+        self.assertIn("knowledge_area", data)
 
     def test_validate__on_happy_path__should_return_valid(self):
         self.knowledge_area_utils.create_all()
@@ -61,7 +69,7 @@ class TestDefinitionSerializer(TestCase):
         self.assertFalse(serializer.is_valid())
 
 
-class TestDefinitionService(TestCase):
+class DefinitionServiceTestCase(TestCase):
     user_utils = UserUtils()
     entry_utils = EntryUtils()
     knowledge_area_utils = KnowledgeAreaUtils()

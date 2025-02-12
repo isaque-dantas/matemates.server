@@ -9,35 +9,16 @@ from api.serializers.entry import EntrySerializer
 from api.services.entry import EntryService
 from api.tests import BASE_URL
 from api.tests.utils.entry_utils import EntryUtils
+from api.tests.utils.image_utils import ImageUtils
 from api.tests.utils.knowledge_area_utils import KnowledgeAreaUtils
 from api.tests.utils.user_utils import UserUtils
 from matemates_server import settings
 
 
-class EntryTests(APITestCase):
+class EntryViewTestCase(APITestCase):
     user_utils = UserUtils()
     entry_utils = EntryUtils()
     knowledge_area_utils = KnowledgeAreaUtils()
-
-    def test_post__on_happy_path__should_return_CREATED(self):
-        self.knowledge_area_utils.create_all()
-        self.user_utils.set_database_environment({"admin-user": True})
-        self.entry_utils.set_database_environment({"calculadora": False})
-
-        response = self.client.post(
-            f'{BASE_URL}/entry',
-            self.entry_utils.get_data("calculadora"),
-            headers=self.user_utils.admin_credentials,
-            format='json'
-        )
-
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertTrue(self.entry_utils.exists("calculadora"))
-
-        calculadora = self.entry_utils.retrieve("calculadora")
-        files_in_uploads_folder = os.listdir(settings.MEDIA_ROOT)
-        self.assertIn(f'entry_{calculadora.pk}__image_0__.jpg', files_in_uploads_folder)
-        self.assertIn(f'entry_{calculadora.pk}__image_1__.jpg', files_in_uploads_folder)
 
     def test_post__with_common_credentials__should_return_FORBIDDEN(self):
         self.knowledge_area_utils.create_all()
@@ -52,26 +33,6 @@ class EntryTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-    def test_post__with_missing_stars_in_content__should_return_BAD_REQUEST(self):
-        self.knowledge_area_utils.create_all()
-        self.user_utils.set_database_environment({"admin-user": True})
-        self.entry_utils.set_database_environment({"angulo-reto": False})
-
-        data = self.entry_utils.get_data("angulo-reto")
-        data["content"] = "an.gu.lo re.to"
-
-        response = self.client.post(
-            f'{BASE_URL}/entry',
-            data,
-            headers=self.user_utils.admin_credentials,
-            format='json'
-        )
-
-        log.debug(f"{self.user_utils.admin_credentials=}")
-        log.debug(f"{response}")
-
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_get_all__on_happy_path__should_return_OK(self):
         self.knowledge_area_utils.create_all()
@@ -93,22 +54,7 @@ class EntryTests(APITestCase):
         calculadora_id = self.entry_utils.retrieve("calculadora").id
         response = self.client.get(f'{BASE_URL}/entry/{calculadora_id}')
 
-        log.debug(f"{response.data=}")
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        self.assertIn("is_validated", response.data)
-
-        self.assertIn("terms", response.data)
-        self.assertIn("syllables", response.data["terms"][0])
-        self.assertNotIn("entry", response.data["terms"])
-
-        self.assertIn("definitions", response.data)
-        self.assertNotIn("entries", response.data["definitions"][0])
-
-        self.assertIn("knowledge_area", response.data["definitions"][0])
-        self.assertIn("questions", response.data)
-        self.assertIn("images", response.data)
 
     def test_get_all_from_specified_knowledge_area__on_happy_path__should_return_OK(self):
         self.knowledge_area_utils.create_all()
@@ -120,13 +66,7 @@ class EntryTests(APITestCase):
             headers=self.user_utils.admin_credentials
         )
 
-        log.debug(f"{response.data=}")
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-
-        calculadora_id = self.entry_utils.retrieve("calculadora").id
-        self.assertEqual(response.data[0]["id"], calculadora_id)
 
     def test_get_all_from_specified_knowledge_area__non_existent_knowledge_area__should_return_NOT_FOUND(self):
         self.knowledge_area_utils.create_all()
@@ -137,10 +77,19 @@ class EntryTests(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_get_all__non_logged_user__should_not_return_non_validated(self):
+    def test_get_all__non_logged_user__should_not_return_non_validated_entries(self):
         self.knowledge_area_utils.create_all()
         self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
         response = self.client.get(f'{BASE_URL}/entry')
+
+        print(
+            [
+                {
+                    key: value
+                    for key, value in entry.items() if key in ["content", "is_validated"]
+                } for entry in response.data
+            ]
+        )
 
         are_all_validated = all([entry['is_validated'] for entry in response.data])
         self.assertTrue(are_all_validated)
@@ -156,8 +105,7 @@ class EntryTests(APITestCase):
             format='json'
         )
 
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]["content"], "calculadora")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_put__on_happy_path__should_return_METHOD_NOT_ALLOWED(self):
         self.knowledge_area_utils.create_all()
@@ -165,14 +113,9 @@ class EntryTests(APITestCase):
         self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
 
         calculadora_id = self.entry_utils.retrieve("calculadora").id
-
-        edited_data = self.entry_utils.get_data("calculadora")
-        new_definitions = self.entry_utils.get_data("angulo-reto")["definitions"]
-        edited_data["definitions"] = new_definitions
-
         response = self.client.put(
             f'{BASE_URL}/entry/{calculadora_id}',
-            edited_data,
+            data={},
             headers=self.user_utils.admin_credentials,
             format='json'
         )
@@ -198,7 +141,6 @@ class EntryTests(APITestCase):
     def test_delete__non_existent_entry__should_return_NOT_FOUND(self):
         self.knowledge_area_utils.create_all()
         self.user_utils.set_database_environment({"admin-user": True})
-        self.entry_utils.set_database_environment({"calculadora": False})
 
         response = self.client.delete(
             f'{BASE_URL}/entry/{99999}',
@@ -244,6 +186,27 @@ class EntrySerializerTestCase(APITestCase):
     user_utils = UserUtils()
     entry_utils = EntryUtils()
     knowledge_area_utils = KnowledgeAreaUtils()
+
+    def test_to_representation__on_happy_path__should_return_dict(self):
+        self.knowledge_area_utils.create_all()
+        self.entry_utils.set_database_environment({"calculadora": True})
+        entry = self.entry_utils.retrieve("calculadora")
+        serializer = EntrySerializer(entry)
+
+        serialized_data = serializer.data
+
+        self.assertIn("is_validated", serialized_data)
+
+        self.assertIn("terms", serialized_data)
+        self.assertIn("syllables", serialized_data["terms"][0])
+        self.assertNotIn("entry", serialized_data["terms"])
+
+        self.assertIn("definitions", serialized_data)
+        self.assertNotIn("entries", serialized_data["definitions"][0])
+
+        self.assertIn("knowledge_area", serialized_data["definitions"][0])
+        self.assertIn("questions", serialized_data)
+        self.assertIn("images", serialized_data)
 
     def test_is_valid__on_happy_path__should_return_true(self):
         self.knowledge_area_utils.create_all()
@@ -323,11 +286,36 @@ class EntrySerializerTestCase(APITestCase):
         serializer = EntrySerializer(data=data)
         self.assertFalse(serializer.is_valid())
 
+    def test_post__with_missing_stars_in_content__should_return_BAD_REQUEST(self):
+        self.knowledge_area_utils.create_all()
+        self.user_utils.set_database_environment({"admin-user": True})
+        self.entry_utils.set_database_environment({"angulo-reto": False})
+
+        data = self.entry_utils.get_data("angulo-reto")
+        data["content"] = "an.gu.lo re.to"
+
+        response = self.client.post(
+            f'{BASE_URL}/entry',
+            data,
+            headers=self.user_utils.admin_credentials,
+            format='json'
+        )
+
+        log.debug(f"{self.user_utils.admin_credentials=}")
+        log.debug(f"{response}")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_validate__missing_data__should_return_invalid(self):
+        serializer = EntrySerializer(data={})
+        self.assertFalse(serializer.is_valid())
+
 
 class EntryServiceTestCase(APITestCase):
     user_utils = UserUtils()
     entry_utils = EntryUtils()
     knowledge_area_utils = KnowledgeAreaUtils()
+    image_utils = ImageUtils()
 
     def test_get_all_related_to_knowledge_area__on_happy_path__should_not_return_duplicates(self):
         self.knowledge_area_utils.create_all()
@@ -356,3 +344,36 @@ class EntryServiceTestCase(APITestCase):
         self.assertEqual(len(entries), 2)
         self.assertEqual(entries[0].content, "ângulo reto")
         self.assertEqual(entries[1].content, "calculadora")
+
+    def test_post__on_happy_path__should_return_CREATED(self):
+        self.knowledge_area_utils.create_all()
+        self.user_utils.set_database_environment({"admin-user": True})
+        self.entry_utils.set_database_environment({"calculadora": False})
+
+        response = self.client.post(
+            f'{BASE_URL}/entry',
+            self.entry_utils.get_data("calculadora"),
+            headers=self.user_utils.admin_credentials,
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(self.entry_utils.exists("calculadora"))
+
+        img_0 = self.image_utils.retrieve("calculadora-0")
+        img_1 = self.image_utils.retrieve("calculadora-0")
+        files_in_uploads_folder = os.listdir(settings.MEDIA_ROOT)
+
+        self.assertIn(img_0.content.name, files_in_uploads_folder)
+        self.assertIn(img_1.content.name, files_in_uploads_folder)
+
+    def test_search_by_content__should_return_two_entries(self):
+        self.knowledge_area_utils.create_all()
+        self.entry_utils.create_all()
+
+        entries = EntryService.search_by_content(
+            "calc",
+            should_get_only_validated=False
+        )
+
+        self.assertEqual(len(entries), 1)

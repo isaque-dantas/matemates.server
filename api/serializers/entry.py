@@ -25,11 +25,12 @@ class EntrySerializer(serializers.ModelSerializer):
     def to_internal_value(self, data):
         internal_value = super().to_internal_value(data)
 
-        # log.debug(f'{internal_value=}')
-        # log.debug(f'{data=}')
+        request = self.context.get("request")
+        if request and request.method == "PATCH":
+            return {"content": internal_value.get("content").strip()}
 
         return {
-            "content": internal_value["content"].strip(),
+            "content": internal_value.get("content").strip(),
             "main_term_gender": data.get("main_term_gender"),
             "main_term_grammatical_category": data.get("main_term_grammatical_category"),
             "images": ImageSerializer(data=data["images"], many=True, read_only=True),
@@ -38,6 +39,10 @@ class EntrySerializer(serializers.ModelSerializer):
         }
 
     def validate(self, data):
+        request = self.context.get("request")
+        if request and request.method == "PATCH":
+           return data
+
         data["definitions"].validate(data["definitions"])
         log.debug(f'{data["definitions"]=}')
         return data
@@ -51,9 +56,9 @@ class EntrySerializer(serializers.ModelSerializer):
         return value
 
     def to_representation(self, instance):
-        log.debug(f'{instance=}')
-        log.debug(f'{instance.content=}')
-        log.debug(f'{instance.definitions.all()=}')
+        # log.debug(f'{instance=}')
+        # log.debug(f'{instance.content=}')
+        # log.debug(f'{instance.definitions.all()=}')
 
         if not isinstance(instance, api.models.Entry):
             return super().to_representation(instance)

@@ -17,7 +17,7 @@ class KnowledgeAreaView(APIView):
             many=True,
             context={
                 'is_knowledge_area_get': True,
-                'should_get_only_validated': UserService.can_see_non_validated_entries(request.user)
+                'should_get_only_validated': not UserService.can_see_non_validated_entries(request.user)
             }
         )
 
@@ -59,7 +59,7 @@ class SingleKnowledgeAreaView(APIView):
             knowledge_area,
             context={
                 'is_knowledge_area_get': True,
-                'should_get_only_validated': UserService.can_see_non_validated_entries(request.user)
+                'should_get_only_validated': not UserService.can_see_non_validated_entries(request.user)
             }
         )
 
