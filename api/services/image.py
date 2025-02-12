@@ -67,10 +67,7 @@ class ImageService:
             filename = image_directory_path(instance, data["content"].name)
             instance.content.save(filename, data["content"])
 
-        instance.caption = data["caption"]
-        instance.save()
+        if "caption" in data:
+            instance.caption = data["caption"]
 
-    @staticmethod
-    def delete_in_uploads(pk: int):
-        image: Image = Image.objects.get(pk=pk)
-        # image.content.
+        instance.save()

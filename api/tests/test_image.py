@@ -68,8 +68,6 @@ class TestImageSerializer(TestCase):
         )
 
         is_valid = serializer.is_valid()
-        # log.debug(f"{serializer.errors=}")
-
         self.assertTrue(is_valid)
 
 
@@ -92,4 +90,3 @@ class TestImageService(TestCase):
 
         image_from_db = self.image_utils.retrieve(instance.pk)
         self.assertEqual(image_from_db.caption, data["caption"])
-        log.debug(f"{image_from_db.content.path=}")
