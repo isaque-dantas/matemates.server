@@ -1,5 +1,5 @@
+from rest_framework.decorators import api_view
 from rest_framework import status
-from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -106,3 +106,19 @@ class SingleEntryView(APIView):
 
         EntryService.delete(pk)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view()
+def validate(request, pk):
+    if not EntryService.exists(pk):
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if not request.user.is_authenticated:
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+    if not request.user.is_staff:
+        return Response(status=status.HTTP_403_FORBIDDEN)
+
+    EntryService.make_entry_validated(pk)
+
+    return Response(status=status.HTTP_204_NO_CONTENT)

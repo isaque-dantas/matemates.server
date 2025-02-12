@@ -6,6 +6,7 @@ from api.views import knowledge_area, user, entry, image, definition, question
 entry_urls = [
     path('entry', entry.EntryView.as_view(), name='entry-list'),
     path('entry/<int:pk>', entry.SingleEntryView.as_view(), name='entry-detail'),
+    path('entry/<int:pk>/validate', entry.validate, name='entry-validation')
 ]
 
 image_urls = [

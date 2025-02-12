@@ -257,3 +257,9 @@ class EntryService:
     def patch_content(instance: Entry, content: str):
         instance.content = content
         instance.save()
+
+    @classmethod
+    def make_entry_validated(cls, pk: int):
+        entry = cls.get(pk)
+        entry.is_validated = True
+        entry.save()

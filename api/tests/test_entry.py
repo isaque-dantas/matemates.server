@@ -377,3 +377,12 @@ class EntryServiceTestCase(APITestCase):
         )
 
         self.assertEqual(len(entries), 1)
+
+    def test_make_entry_validated__on_happy_path__should_do_it(self):
+        self.knowledge_area_utils.create_all()
+        self.entry_utils.set_database_environment({"calculadora": True}, force_operations=True)
+        pk = self.entry_utils.retrieve("calculadora").pk
+
+        EntryService.make_entry_validated(pk)
+
+        self.assertTrue(self.entry_utils.retrieve("calculadora").is_validated)
