@@ -101,5 +101,7 @@ class DatabaseUtils(ABC):
         if force_operations:
             self.create(data_identifier)
 
+        log.debug(f"Deleting {self.__entity_name} identified by '{data_identifier}'")
+
         query_parameters = self.get_entity_query_parameters_from_data_identifier(data_identifier)
         self.__entity.objects.filter(**query_parameters).delete()

@@ -7,3 +7,4 @@ from api.models.question import Question
 from api.models.term import Term
 from api.models.syllable import Syllable
 from api.models.user import User
+from api.models.entry_access_history import EntryAccessHistory

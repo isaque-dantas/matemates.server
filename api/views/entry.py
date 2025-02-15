@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 from api import log
 from api.serializers.entry import EntrySerializer
 from api.services.entry import EntryService
+from api.services.entry_access_history import EntryAccessHistoryService
 from api.services.knowledge_area import KnowledgeAreaService
 from api.services.user import UserService
 
@@ -67,6 +68,17 @@ class SingleEntryView(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         entry = EntryService.get(pk)
+
+        if (
+                not UserService.can_see_non_validated_entries(request.user) and
+                not entry.is_validated
+        ):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        log.debug(f"{request.user=}")
+        if request.user:
+            EntryAccessHistoryService.register(user_id=request.user.pk, entry_id=pk)
+
         serializer = EntrySerializer(entry, context={'request': request})
 
         return Response(serializer.data, status=status.HTTP_200_OK)

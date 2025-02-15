@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from api import log
-from api.models import Definition, Entry
+from api.models import Definition, Entry, EntryAccessHistory
 from api.serializers.entry import EntrySerializer
 from api.services.entry import EntryService
 from api.tests import BASE_URL
@@ -50,10 +50,19 @@ class EntryViewTestCase(APITestCase):
     def test_get_single__on_happy_path__should_return_OK(self):
         self.knowledge_area_utils.create_all()
         self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
+        self.user_utils.set_database_environment({"admin-user": True})
 
         calculadora_id = self.entry_utils.retrieve("calculadora").id
-        response = self.client.get(f'{BASE_URL}/entry/{calculadora_id}')
+        admin_user_id = self.user_utils.retrieve("admin-user").id
 
+        EntryAccessHistory.objects.all().delete()
+
+        response = self.client.get(
+            f'{BASE_URL}/entry/{calculadora_id}',
+            headers=self.user_utils.admin_credentials
+        )
+
+        self.assertEqual(EntryAccessHistory.objects.filter(user__id=admin_user_id).count(), 1)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_all_from_specified_knowledge_area__on_happy_path__should_return_OK(self):
