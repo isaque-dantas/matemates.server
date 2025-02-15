@@ -13,6 +13,7 @@ class EntryUtils(DatabaseUtils):
             data_identifier
             .replace("*", "")
             .replace(".", "")
+            .replace("-", " ")
         )
 
         return {"content": parsed_identifier}

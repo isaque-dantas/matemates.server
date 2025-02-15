@@ -108,7 +108,7 @@ class SingleEntryView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@api_view()
+@api_view(["PATCH"])
 def validate(request, pk):
     if not EntryService.exists(pk):
         return Response(status=status.HTTP_404_NOT_FOUND)

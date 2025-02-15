@@ -55,9 +55,9 @@ class DatabaseUtils(ABC):
     def get_data(self, data_identifier: str) -> dict:
         return RequestBody.get_data(self.__entity_name, data_identifier)
 
-    def create_all(self):
+    def create_all(self, force_operations: bool = False):
         for key in RequestBody.get_entity_keys(self.__entity_name):
-            self.create(key)
+            self.create(key, force_operations)
 
     def set_database_environment(self, environment: dict[str, bool], force_operations=False):
         actions = {
