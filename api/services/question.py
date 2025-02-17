@@ -31,7 +31,7 @@ class QuestionService:
 
     @staticmethod
     def update(serializer):
-        data = serializer.data
+        data = serializer.validated_data
         instance: Question = serializer.instance
 
         instance.statement = data["statement"]

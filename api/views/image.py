@@ -4,6 +4,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from api.serializers.image import ImageSerializer
 from api.services.image import ImageService
 from api.services.user import UserService
 
@@ -21,7 +22,30 @@ class ImageView(APIView):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         image = ImageService.get(pk)
-        return FileResponse(image.content.open(), status=status.HTTP_200_OK)
+        serializer = ImageSerializer(image)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @staticmethod
+    def put(request, pk):
+        if not ImageService.exists(pk):
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        if not request.user.is_authenticated:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        if not request.user.is_staff:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        image = ImageService.get(pk)
+        serializer = ImageSerializer(image, data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        ImageService.update(serializer)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 @api_view()
 def get_image_blob_file(request, pk):

@@ -1,7 +1,9 @@
 from django.test import TestCase
+from rest_framework import status
 
 from api.models.entry_access_history import EntryAccessHistory
 from api.services.entry_access_history import EntryAccessHistoryService
+from api.tests import BASE_URL
 from api.tests.utils.entry_utils import EntryUtils
 from api.tests.utils.knowledge_area_utils import KnowledgeAreaUtils
 from api.tests.utils.user_utils import UserUtils
@@ -39,3 +41,30 @@ class EahServiceTestCase(TestCase):
         eah_list = EntryAccessHistoryService.get_from_user(user_id=user_id)
 
         self.assertTrue(eah_list)
+
+class EahViewTestCase(TestCase):
+    knowledge_area_utils = KnowledgeAreaUtils()
+    user_utils = UserUtils()
+    entry_utils = EntryUtils()
+
+    def test_get__on_happy_path__should_return_history(self):
+        self.knowledge_area_utils.create_all()
+        self.user_utils.set_database_environment({"common-user": True})
+        self.entry_utils.set_database_environment({"calculadora": True})
+
+        user_id = self.user_utils.retrieve("common-user").pk
+        entry_id = self.entry_utils.retrieve("calculadora").pk
+
+        EntryAccessHistoryService.register(user_id=user_id, entry_id=entry_id)
+        EntryAccessHistoryService.register(user_id=user_id, entry_id=entry_id)
+        EntryAccessHistoryService.register(user_id=user_id, entry_id=entry_id)
+        EntryAccessHistoryService.register(user_id=user_id, entry_id=entry_id)
+        EntryAccessHistoryService.register(user_id=user_id, entry_id=entry_id)
+
+        response = self.client.get(
+            f"{BASE_URL}/history",
+            headers=self.user_utils.common_credentials
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 5)

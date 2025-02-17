@@ -1,12 +1,16 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from api.views import knowledge_area, user, entry, image, definition, question
+from api.views import knowledge_area, user, entry, image, definition, question, entry_access_history
 
 entry_urls = [
     path('entry', entry.EntryView.as_view(), name='entry-list'),
     path('entry/<int:pk>', entry.SingleEntryView.as_view(), name='entry-detail'),
     path('entry/<int:pk>/validate', entry.validate, name='entry-validation')
+]
+
+entry_history_urls = [
+    path('history', entry_access_history.EntryAccessHistoryView.as_view(), name='entry-history'),
 ]
 
 image_urls = [
@@ -43,6 +47,7 @@ urlpatterns = (
         ]
         + user_urls
         + entry_urls
+        + entry_history_urls
         + question_urls
         + image_urls
         + knowledge_area_urls
