@@ -68,3 +68,24 @@ class EahViewTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 5)
+
+    def test_get_most_accessed__should_return_entries(self):
+        self.knowledge_area_utils.create_all()
+        self.user_utils.set_database_environment({"common-user": True})
+        self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
+
+        user_id = self.user_utils.retrieve("common-user").pk
+        calculadora_id = self.entry_utils.retrieve("calculadora").pk
+        angulo_reto_id = self.entry_utils.retrieve("angulo-reto").pk
+
+        EntryAccessHistoryService.register(user_id=user_id, entry_id=calculadora_id)
+        EntryAccessHistoryService.register(user_id=user_id, entry_id=calculadora_id)
+        EntryAccessHistoryService.register(user_id=user_id, entry_id=calculadora_id)
+        EntryAccessHistoryService.register(user_id=user_id, entry_id=angulo_reto_id)
+        EntryAccessHistoryService.register(user_id=user_id, entry_id=angulo_reto_id)
+
+        response = self.client.get(f"{BASE_URL}/history/most_accessed")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]["id"], calculadora_id)
+        self.assertEqual(response.data[1]["id"], angulo_reto_id)

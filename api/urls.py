@@ -11,6 +11,7 @@ entry_urls = [
 
 entry_history_urls = [
     path('history', entry_access_history.EntryAccessHistoryView.as_view(), name='entry-history'),
+    path('history/most_accessed', entry_access_history.get_most_accessed_entries, name='entry-history-most-accessed'),
 ]
 
 image_urls = [
