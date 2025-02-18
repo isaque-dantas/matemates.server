@@ -93,12 +93,8 @@ ADMIN_EMAIL = 'matemates.api.admin@gmail.com'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'matemates_db_api',
-        'USER': 'dba_matemates',
-        'PASSWORD': 'Box7ufe4SH83NJvGzkgVxKg3',
-        'HOST': '127.0.0.1',
-        'PORT': '3306',
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": "database.db"
     }
 }
 
