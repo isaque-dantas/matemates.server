@@ -7,6 +7,7 @@ from api import log
 from api.models import Definition, Entry, EntryAccessHistory
 from api.serializers.entry import EntrySerializer
 from api.services.entry import EntryService
+from api.services.term import TermService
 from api.tests import BASE_URL
 from api.tests.utils.entry_utils import EntryUtils
 from api.tests.utils.image_utils import ImageUtils
@@ -411,10 +412,12 @@ class EntryServiceTestCase(APITestCase):
 
         entry = self.entry_utils.retrieve("calculadora")
 
-        serializer = EntrySerializer(entry, data={"content": "po.ta.to.es"}, context={"is_patch": True})
+        serializer = EntrySerializer(entry, data={"content": "po.ta.to.es", "main_term_grammatical_category": "verbo"}, context={"is_patch": True})
         serializer.is_valid(raise_exception=True)
         EntryService.patch(serializer)
 
         new_entry = Entry.objects.get(pk=entry.pk)
+        main_term = TermService.get_main_from_entry(new_entry)
         log.debug(new_entry)
         self.assertEqual(new_entry.content, "potatoes")
+        self.assertEqual(main_term.grammatical_category, "verbo")

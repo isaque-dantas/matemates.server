@@ -98,6 +98,8 @@ class SingleEntryView(APIView):
         if not request.user.is_staff:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
+        log.debug(request.data)
+
         entry = EntryService.get(pk)
         serializer = EntrySerializer(entry, data=request.data, context={'is_patch': True})
 

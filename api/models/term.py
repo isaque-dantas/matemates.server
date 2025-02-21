@@ -29,3 +29,6 @@ class Term(models.Model):
     entry = models.ForeignKey(Entry, on_delete=models.CASCADE, related_name="terms")
 
     objects = TermManager()
+
+    def __str__(self):
+        return f"{self.content} {self.grammatical_category} {self.gender}"

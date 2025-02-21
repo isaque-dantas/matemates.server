@@ -275,11 +275,14 @@ class EntryService:
             return None
 
         if data.get("main_term_grammatical_category"):
-            main_term.main_term_grammatical_category = data.get("main_term_grammatical_category")
+            main_term.grammatical_category = data.get("main_term_grammatical_category")
 
         if data.get("main_term_gender"):
-            main_term.main_term_gender = data.get("main_term_gender")
+            main_term.gender = data.get("main_term_gender")
 
+        log.debug(f"{main_term=}")
+        log.debug(f"{data.get('main_term_grammatical_category')=}")
+        log.debug(f"{data.get('main_term_gender')=}")
         main_term.save()
 
     @classmethod

@@ -35,8 +35,8 @@ class EntrySerializer(serializers.ModelSerializer):
         if self.context.get("is_patch"):
             return {
                 "content": internal_value.get("content"),
-                "main_term_gender": internal_value.get("main_term_gender"),
-                "main_term_grammatical_category": internal_value.get("main_term_grammatical_category"),
+                "main_term_gender": data.get("main_term_gender"),
+                "main_term_grammatical_category": data.get("main_term_grammatical_category"),
             }
 
         return {
