@@ -1,3 +1,4 @@
+from rest_framework.request import Request
 from rest_framework.test import APITestCase
 from django.test import TestCase
 from api import log
@@ -68,12 +69,39 @@ class DefinitionSerializerTestCase(TestCase):
 
         self.assertFalse(serializer.is_valid())
 
+    def test_validate__on_create_without_entry__should_return_invalid(self):
+        self.knowledge_area_utils.create_all()
+        self.entry_utils.set_database_environment({"calculadora": True})
+        serializer = DefinitionSerializer(
+            data={"content": "Esta definição está mentindo.", "knowledge_area__content": "álgebra"},
+            context={'is_creation': True}
+        )
+
+        is_valid = serializer.is_valid()
+        # log.debug(serializer.errors)
+        self.assertFalse(is_valid)
+
 
 class DefinitionServiceTestCase(TestCase):
     user_utils = UserUtils()
     entry_utils = EntryUtils()
     knowledge_area_utils = KnowledgeAreaUtils()
     definition_utils = DefinitionUtils()
+
+    def test_create__on_happy_path__should_create_in_database(self):
+        self.knowledge_area_utils.create_all()
+        self.entry_utils.set_database_environment({"calculadora": True}, force_operations=True)
+        calculadora_id = self.entry_utils.retrieve("calculadora").pk
+
+        serializer = DefinitionSerializer(
+            data={"content": "Uma nova definição", "knowledge_area__content": "cinemática", "entry": calculadora_id}
+        )
+
+        serializer.is_valid()
+        definition = DefinitionService.create(serializer)
+
+        self.assertTrue(definition)
+        self.assertTrue(self.definition_utils.exists("calculadora-2"))
 
     def test_update__on_happy_path__should_edit_in_database(self):
         self.knowledge_area_utils.create_all()

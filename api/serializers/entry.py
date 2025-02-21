@@ -16,6 +16,8 @@ class EntrySerializer(serializers.ModelSerializer):
         fields = ['id', 'content', 'is_validated', 'images', 'definitions', 'questions', 'main_term_gender',
                   'main_term_grammatical_category']
 
+    content = serializers.CharField(required=False)
+
     main_term_gender = serializers.CharField(read_only=True)
     main_term_grammatical_category = serializers.CharField(read_only=True)
     images = ImageSerializer(many=True, read_only=True)
@@ -25,29 +27,53 @@ class EntrySerializer(serializers.ModelSerializer):
     def to_internal_value(self, data):
         internal_value = super().to_internal_value(data)
 
-        request = self.context.get("request")
-        if request and request.method == "PATCH":
-            return {"content": internal_value.get("content").strip()}
+        is_patch = self.context.get("is_patch")
+
+        log.debug(f"{self.context=}")
+        log.debug(f"{is_patch=}")
+
+        if self.context.get("is_patch"):
+            return {
+                "content": internal_value.get("content"),
+                "main_term_gender": internal_value.get("main_term_gender"),
+                "main_term_grammatical_category": internal_value.get("main_term_grammatical_category"),
+            }
 
         return {
-            "content": internal_value.get("content").strip(),
+            "content": internal_value.get("content"),
             "main_term_gender": data.get("main_term_gender"),
             "main_term_grammatical_category": data.get("main_term_grammatical_category"),
-            "images": ImageSerializer(data=data["images"], many=True, read_only=True),
-            "definitions": DefinitionSerializer(data=data["definitions"], many=True, read_only=True),
-            "questions": QuestionSerializer(data=data["questions"], many=True, read_only=True),
+            "images": ImageSerializer(data=data.get("images"), many=True, read_only=True),
+            "definitions": DefinitionSerializer(data=data.get("definitions"), many=True, read_only=True),
+            "questions": QuestionSerializer(data=data.get("questions"), many=True, read_only=True),
         }
 
     def validate(self, data):
-        request = self.context.get("request")
-        if request and request.method == "PATCH":
+        if self.context.get("is_patch"):
            return data
 
-        data["definitions"].validate(data["definitions"])
-        log.debug(f'{data["definitions"]=}')
+        errors = []
+
+        if not data['images'].initial_data:
+            errors.append(f"O campo 'images' é obrigatório.")
+
+        if not data['definitions'].initial_data:
+            errors.append(f"O campo 'definitions' é obrigatório.")
+        else:
+            data["definitions"].validate(data["definitions"])
+
+        if not data['questions'].initial_data:
+            errors.append(f"O campo 'questions' é obrigatório.")
+
+        if errors:
+            raise ValidationError(errors)
+
         return data
 
     def validate_content(self, value):
+        if not self.context.get("is_patch") and value is None:
+            raise ValidationError("O campo 'content' é obrigatório.")
+
         try:
             EntryService.validate_content(self.instance, value)
         except ValidationError as err:

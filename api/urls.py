@@ -16,7 +16,7 @@ entry_history_urls = [
 
 image_urls = [
     path('image', image.ImageView.as_view(), name='entry-image-list'),
-    path('image/<int:pk>', image.ImageView.as_view(), name='entry-image-detail'),
+    path('image/<int:pk>', image.SingleImageView.as_view(), name='entry-image-detail'),
     path('image/<int:pk>/blob_file', image.get_image_blob_file, name='entry-image-blob-file'),
 ]
 

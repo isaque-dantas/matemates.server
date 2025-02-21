@@ -6,12 +6,12 @@ class QuestionService:
     @staticmethod
     def create_all(entry_data, entry):
         return Question.objects.create(
-            [QuestionService.create(data, entry) for data in entry_data["questions"]],
+            [QuestionService.get_instance_from_data(data, entry) for data in entry_data["questions"]],
         )
 
     @staticmethod
-    def create(data, entry):
-        return Question(**data, entry=entry)
+    def get_instance_from_data(data, entry):
+        return Question(statement=data["statement"], answer=data["answer"], entry=entry)
 
     @staticmethod
     def get(pk):
@@ -37,3 +37,11 @@ class QuestionService:
         instance.statement = data["statement"]
         instance.answer = data["answer"]
         instance.save()
+
+    @classmethod
+    def create(cls, serializer):
+        data = serializer.validated_data
+        question = cls.get_instance_from_data(data, data["entry"])
+        question.save()
+
+        return question

@@ -2,7 +2,7 @@ import django.db.models
 from rest_framework.exceptions import ValidationError
 
 from api import log
-from api.models import Definition, KnowledgeArea
+from api.models import Definition, KnowledgeArea, Entry
 from api.services.knowledge_area import KnowledgeAreaService
 
 
@@ -20,12 +20,12 @@ class DefinitionService:
         ]
 
         return Definition.objects.create(
-            [DefinitionService.create(data, entry) for data in data_list]
+            [DefinitionService.get_instance_from_data(data, entry) for data in data_list]
         )
 
     @staticmethod
-    def create(data, entry):
-        log.debug(f"{data['knowledge_area']=}")
+    def get_instance_from_data(data, entry):
+        # log.debug(f"{data['knowledge_area']=}")
         return Definition(content=data["content"], entry=entry, knowledge_area=data["knowledge_area"])
 
     @staticmethod
@@ -84,3 +84,15 @@ class DefinitionService:
     @staticmethod
     def delete(pk):
         Definition.objects.filter(pk=pk).delete()
+
+    @classmethod
+    def create(cls, serializer):
+        data = serializer.validated_data
+
+        knowledge_area = KnowledgeAreaService.get_by_content(data["knowledge_area__content"])
+        data.update({"knowledge_area": knowledge_area})
+
+        definition = cls.get_instance_from_data(data, data["entry"])
+        definition.save()
+
+        return definition

@@ -1,8 +1,9 @@
 from rest_framework.exceptions import ValidationError
+from rest_framework.relations import PrimaryKeyRelatedField
 from rest_framework.serializers import StringRelatedField, ModelSerializer
 
 from api import log
-from api.models import Definition
+from api.models import Definition, Entry
 from api.serializers.custom_list_serializer import CustomListSerializer
 from api.services.definition import DefinitionService
 
@@ -16,10 +17,11 @@ class DefinitionListSerializer(CustomListSerializer):
 class DefinitionSerializer(ModelSerializer):
     class Meta:
         model = Definition
-        fields = ['id', 'content', 'knowledge_area__content']
+        fields = ['id', 'content', 'knowledge_area__content', 'entry']
         list_serializer_class = DefinitionListSerializer
 
     knowledge_area__content = StringRelatedField()
+    entry = PrimaryKeyRelatedField(allow_null=True, required=False, queryset=Entry.objects.all())
 
     def to_internal_value(self, data):
         internal_value = super().to_internal_value(data)
@@ -32,8 +34,11 @@ class DefinitionSerializer(ModelSerializer):
     def validate(self, attrs):
         errors = []
 
+        if self.context.get('is_creation') and not attrs.get("entry"):
+            errors.append({"entry": "É obrigatório informar o 'id' do verbete na criação da definição."})
+
         if not attrs.get("knowledge_area__content", None):
-            errors.append("É obrigatório informar a área do conhecimento.")
+            errors.append({"knowledge_area__content": "É obrigatório informar a área do conhecimento."})
 
         try:
             DefinitionService.validate_knowledge_area__content(attrs["knowledge_area__content"])

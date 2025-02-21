@@ -318,6 +318,15 @@ class EntrySerializerTestCase(APITestCase):
     def test_validate__missing_data__should_return_invalid(self):
         serializer = EntrySerializer(data={})
         self.assertFalse(serializer.is_valid())
+        log.debug(serializer.errors)
+
+    def test_validate__missing_content_in_patch__should_return_valid(self):
+        serializer = EntrySerializer(data={"main_term_grammatical_category": "numeral"}, context={"is_patch": True})
+
+        is_valid = serializer.is_valid()
+        # log.debug(serializer.errors)
+
+        self.assertTrue(is_valid)
 
 
 class EntryServiceTestCase(APITestCase):
@@ -395,3 +404,17 @@ class EntryServiceTestCase(APITestCase):
         EntryService.make_entry_validated(pk)
 
         self.assertTrue(self.entry_utils.retrieve("calculadora").is_validated)
+
+    def test_patch__on_happy_path__should_patch(self):
+        self.knowledge_area_utils.create_all()
+        self.entry_utils.set_database_environment({"calculadora": True})
+
+        entry = self.entry_utils.retrieve("calculadora")
+
+        serializer = EntrySerializer(entry, data={"content": "po.ta.to.es"}, context={"is_patch": True})
+        serializer.is_valid(raise_exception=True)
+        EntryService.patch(serializer)
+
+        new_entry = Entry.objects.get(pk=entry.pk)
+        log.debug(new_entry)
+        self.assertEqual(new_entry.content, "potatoes")

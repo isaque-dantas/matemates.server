@@ -20,11 +20,11 @@ class ImageService:
         ]
 
         return Image.objects.create(
-            [ImageService.create(data, entry, i) for i, data in enumerate(data_list)],
+            [ImageService.get_instance_from_data(data, entry, i) for i, data in enumerate(data_list)],
         )
 
     @staticmethod
-    def create(data, entry, image_number) -> dict[str, Image | str]:
+    def get_instance_from_data(data, entry, image_number) -> dict[str, Image | str]:
         image = Image.objects.model(
             caption=data["caption"],
             entry=entry,
@@ -71,3 +71,32 @@ class ImageService:
             instance.caption = data["caption"]
 
         instance.save()
+
+    @classmethod
+    def create(cls, serializer):
+        data = serializer.validated_data
+        image_number = Image.objects.filter(entry__pk=data["entry"].pk).count()
+
+        log.debug(f"{data=}")
+
+        image = Image(
+            caption=data["caption"],
+            entry=data["entry"],
+            image_number_in_entry=image_number
+        )
+
+        filename = image_directory_path(image, data["content"].name)
+        image.content.save(filename, data["content"])
+
+        if "caption" in data:
+            image.caption = data["caption"]
+
+        image.save()
+
+        return image
+
+    @classmethod
+    def delete(cls, pk):
+        image = cls.get(pk)
+        image.content.delete()
+        image.delete()

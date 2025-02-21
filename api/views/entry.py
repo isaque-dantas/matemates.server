@@ -98,16 +98,13 @@ class SingleEntryView(APIView):
         if not request.user.is_staff:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        if "content" not in request.data:
-            return Response({"content": "Este campo é obrigatório."}, status=status.HTTP_400_BAD_REQUEST)
-
-        serializer = EntrySerializer(data=request.data, context={'request': request})
+        entry = EntryService.get(pk)
+        serializer = EntrySerializer(entry, data=request.data, context={'is_patch': True})
 
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        entry = EntryService.get(pk)
-        EntryService.patch_content(instance=entry, content=serializer.data["content"])
+        EntryService.patch(serializer)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 

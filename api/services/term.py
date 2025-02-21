@@ -23,10 +23,9 @@ class TermService:
             for term_content in entry_data['content'].split()
         ]
 
-        return [TermService.create(data, entry) for data in data_list]
-
+        return [TermService.get_instance_from_data(data, entry) for data in data_list]
     @staticmethod
-    def create(data, entry):
+    def get_instance_from_data(data, entry):
         original_content = data["content"]
         data["content"] = data["content"].replace(".", "")
 
@@ -37,3 +36,11 @@ class TermService:
         SyllableService.create_from_term_content(original_content, term)
 
         return term
+
+    @classmethod
+    def get(cls, pk):
+        return Term.objects.get(pk=pk)
+
+    @classmethod
+    def get_main_from_entry(cls, entry):
+        return Term.objects.get(entry=entry, is_main_term=True)

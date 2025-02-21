@@ -2,6 +2,7 @@ from django.http import FileResponse
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.status import HTTP_204_NO_CONTENT
 from rest_framework.views import APIView
 
 from api.serializers.image import ImageSerializer
@@ -10,6 +11,26 @@ from api.services.user import UserService
 
 
 class ImageView(APIView):
+    @staticmethod
+    def post(request):
+        if not request.user.is_authenticated:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        if not request.user.is_staff:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        serializer = ImageSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        image = ImageService.create(serializer)
+        serializer = ImageSerializer(image)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class SingleImageView(APIView):
     @staticmethod
     def get(request, pk):
         if not ImageService.exists(pk):
@@ -45,6 +66,20 @@ class ImageView(APIView):
         ImageService.update(serializer)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @staticmethod
+    def delete(request, pk):
+        if not ImageService.exists(pk):
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        if not request.user.is_authenticated:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        if not request.user.is_staff:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        ImageService.delete(pk)
+        return Response(status=HTTP_204_NO_CONTENT)
 
 
 @api_view()

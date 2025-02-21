@@ -14,7 +14,21 @@ from api.services.user import UserService
 class DefinitionView(APIView):
     @staticmethod
     def post(request):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        if not request.user.is_authenticated:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        if not request.user.is_staff:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        serializer = DefinitionSerializer(data=request.data, context={'is_creation': True})
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        definition = DefinitionService.create(serializer)
+        serializer = DefinitionSerializer(definition)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class SingleDefinitionView(APIView):

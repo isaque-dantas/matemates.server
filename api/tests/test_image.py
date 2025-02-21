@@ -77,6 +77,21 @@ class TestImageService(TestCase):
     knowledge_area_utils = KnowledgeAreaUtils()
     image_utils = ImageUtils()
 
+    def test_create__on_happy_path__should_create_in_database(self):
+        self.knowledge_area_utils.create_all()
+        self.entry_utils.set_database_environment({"calculadora": True})
+        calculadora_id = self.entry_utils.retrieve("calculadora").pk
+
+        serializer = ImageSerializer(
+            data={**self.entry_utils.get_data("calculadora")["images"][0], "entry": calculadora_id},
+            context={"is_creation": True}
+        )
+
+        serializer.is_valid(raise_exception=True)
+        ImageService.create(serializer)
+
+        self.assertTrue(self.image_utils.exists("calculadora-2"))
+
     def test_update__on_happy_path__should_update_in_database(self):
         self.knowledge_area_utils.create_all()
         self.entry_utils.set_database_environment({"calculadora": True})

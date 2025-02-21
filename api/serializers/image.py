@@ -1,8 +1,10 @@
 from django.urls import reverse
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
+
 from api import log
 
-from api.models import Image
+from api.models import Image, Entry
 from api.serializers.custom_list_serializer import CustomListSerializer
 from drf_base64.fields import Base64ImageField
 
@@ -10,12 +12,13 @@ from drf_base64.fields import Base64ImageField
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Image
-        fields = ['caption', 'base64_image', 'id']
+        fields = ['caption', 'base64_image', 'id', 'entry']
         list_serializer_class = CustomListSerializer
 
     id = serializers.IntegerField(read_only=True, required=False)
     base64_image = Base64ImageField(source='content', required=False)
     caption = serializers.CharField(required=False)
+    entry = serializers.PrimaryKeyRelatedField(allow_null=True, required=False, queryset=Entry.objects.all())
 
     def to_representation(self, instance):
         return {
@@ -33,10 +36,16 @@ class ImageSerializer(serializers.ModelSerializer):
         return relative_url
 
     def validate(self, attrs):
-        is_update = self.context.get('is_update')
+        errors = []
 
-        if not is_update and 'content' not in attrs:
-            raise serializers.ValidationError('O conteúdo da imagem é obrigatório.')
+        if not self.context.get('is_update') and 'content' not in attrs:
+            errors.append({"content": 'O conteúdo da imagem é obrigatório.'})
+
+        if self.context.get('is_creation') and not attrs.get("entry"):
+            errors.append({"entry": "É obrigatório informar o 'id' do verbete na criação da definição."})
+
+        if errors:
+            raise ValidationError(errors)
 
         return attrs
 

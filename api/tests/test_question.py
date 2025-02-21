@@ -73,12 +73,36 @@ class TestQuestionSerializer(TestCase):
 
         self.assertFalse(serializer.is_valid())
 
+    def test_validate__on_create_without_entry__should_return_invalid(self):
+        serializer = QuestionSerializer(
+            data={"statement": "Pergunta maravilhosa?", "answer": "Com certeza."},
+            context={'is_creation': True}
+        )
+
+        self.assertFalse(serializer.is_valid())
+
 
 class TestQuestionService(TestCase):
     user_utils = UserUtils()
     entry_utils = EntryUtils()
     knowledge_area_utils = KnowledgeAreaUtils()
     question_utils = QuestionUtils()
+
+    def test_create__on_happy_path__should_create_in_database(self):
+        self.knowledge_area_utils.create_all()
+        self.entry_utils.set_database_environment({"calculadora": True}, force_operations=True)
+        calculadora_id = self.entry_utils.retrieve("calculadora").pk
+
+        serializer = QuestionSerializer(
+            data={"statement": "Pergunta maravilhosa?", "answer": "Com certeza.", "entry": calculadora_id},
+            context={"is_creation": True}
+        )
+
+        serializer.is_valid(raise_exception=True)
+        question = QuestionService.create(serializer)
+
+        self.assertTrue(question)
+        self.assertTrue(self.question_utils.exists("calculadora-1"))
 
     def test_update__on_happy_path__should_edit_in_database(self):
         self.knowledge_area_utils.create_all()

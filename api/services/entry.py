@@ -36,7 +36,7 @@ class EntryService:
 
     @staticmethod
     def parse_content(content: str):
-        return content.replace("*", "").replace(".", "")
+        return content.strip().replace("*", "").replace(".", "")
 
     @staticmethod
     def content_already_exists(content: str):
@@ -45,6 +45,8 @@ class EntryService:
     @staticmethod
     def validate_content(instance: Entry, value: str):
         errors = []
+
+        value = value.strip()
 
         it_is_updating_to_the_same_value = (
                 instance is not None
@@ -253,10 +255,32 @@ class EntryService:
             .all()
         )
 
-    @staticmethod
-    def patch_content(instance: Entry, content: str):
-        instance.content = content
-        instance.save()
+    @classmethod
+    def patch(cls, serializer):
+        data = serializer.validated_data
+        instance: Entry = serializer.instance
+
+        log.debug(f"{data=}")
+
+        if "content" in data:
+            instance.content = cls.parse_content(data.get("content"))
+            instance.save()
+
+        main_term = TermService.get_main_from_entry(instance)
+
+        if (
+                not data.get("main_term_grammatical_category") and
+                not data.get("main_term_gender")
+        ):
+            return None
+
+        if data.get("main_term_grammatical_category"):
+            main_term.main_term_grammatical_category = data.get("main_term_grammatical_category")
+
+        if data.get("main_term_gender"):
+            main_term.main_term_gender = data.get("main_term_gender")
+
+        main_term.save()
 
     @classmethod
     def make_entry_validated(cls, pk: int):
