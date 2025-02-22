@@ -11,4 +11,5 @@ class EntryAccessHistorySerializer(serializers.ModelSerializer):
         return {
             'access_moment': instance.access_moment,
             'entry_content': instance.entry.content,
+            'entry_id': instance.entry.pk
         }
