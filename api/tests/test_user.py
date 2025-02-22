@@ -1,11 +1,16 @@
+from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 from api import log
 from api.models import InvitedEmail
+from api.serializers.user import UserSerializer
+from api.services.user import UserService
 from api.tests import BASE_URL
 from api.tests.utils.user_utils import UserUtils
 from matemates_server import settings
+from api.tests.utils.base64_encoded_files import DOG, CALCULADORA
+from matemates_server.settings import BASE_DIR
 
 
 class UserTests(APITestCase):
@@ -150,4 +155,64 @@ class UserTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-        self.assertTrue(InvitedEmail.objects.filter(email=self.utils.common_user_data['email']).exists() )
+        self.assertTrue(InvitedEmail.objects.filter(email=self.utils.common_user_data['email']).exists())
+
+
+class UserSerializerTestCase(TestCase):
+    user_utils = UserUtils()
+
+    def test_is_valid__on_happy_path__should_return_VALID(self):
+        serializer = UserSerializer(
+            data={
+                "name": "New User",
+                "username": "new-user",
+                "password": "password",
+                "email": "email@email.com",
+            }
+        )
+
+        serializer.is_valid(raise_exception=True)
+        self.assertTrue(serializer.is_valid())
+
+    def test_is_valid__without_data__should_return_INVALID(self):
+        serializer = UserSerializer(data={})
+        log.debug(serializer.initial_data)
+        self.assertFalse(serializer.is_valid())
+
+    def test_is_valid__on_edit_profile_image__should_return_VALID(self):
+        serializer = UserSerializer(
+            data={"profile_image_base64": DOG},
+            context={'is_profile_image_update': True}
+        )
+
+        serializer.is_valid(raise_exception=True)
+        self.assertTrue(serializer.is_valid())
+
+    def test_is_valid__email_in_wrong_format__should_return_INVALID(self):
+        data = self.user_utils.get_data("common-user")
+        data["email"] = "invalid email"
+
+        serializer = UserSerializer(data=data)
+
+        self.assertFalse(serializer.is_valid())
+
+
+class UserServiceTestCase(TestCase):
+    user_utils = UserUtils()
+
+    def test_update_profile_image__on_happy_path__should_do_it(self):
+        self.user_utils.set_database_environment({"common-user": True})
+        user = self.user_utils.retrieve('common-user')
+
+        serializer = UserSerializer(
+            user,
+            data={"profile_image_base64": CALCULADORA},
+            context={"is_profile_image_update": True}
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        UserService.update_profile_image(serializer)
+        user_after_update = self.user_utils.retrieve('common-user')
+
+        self.assertEqual(user_after_update.profile_image.open().read(), open(f"{BASE_DIR}/api/tests/utils/calculadora.png", mode='rb').read())

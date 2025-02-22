@@ -1,3 +1,4 @@
+from django.http import FileResponse
 from rest_framework import status
 from rest_framework.decorators import api_view, action
 from rest_framework.response import Response
@@ -67,3 +68,24 @@ class UserView(APIView):
 
         UserService.inactivate_user(request.user.username)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class UserProfileImageView(APIView):
+    @staticmethod
+    def patch(request):
+        if not request.user.is_authenticated:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = UserSerializer(request.user, data=request.data, context={'is_profile_image_update': True})
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        UserService.update_profile_image(serializer)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @staticmethod
+    def get(request):
+        if not request.user.is_authenticated:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        return FileResponse(request.user.profile_image, status=status.HTTP_200_OK)

@@ -60,3 +60,11 @@ class UserService:
     @staticmethod
     def can_see_non_validated_entries(user: AnonymousUser | User) -> bool:
         return user.is_authenticated and user.is_staff
+
+    @staticmethod
+    def update_profile_image(serializer):
+        data = serializer.validated_data
+        instance: User = serializer.instance
+
+        instance.profile_image.delete()
+        instance.profile_image.save("foo.png", data["profile_image_base64"])
