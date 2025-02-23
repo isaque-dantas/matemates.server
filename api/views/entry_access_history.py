@@ -15,7 +15,7 @@ class EntryAccessHistoryView(APIView):
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
         history = EntryAccessHistoryService.get_from_user(request.user.pk)
-        serializer = EntryAccessHistorySerializer(history, many=True)
+        serializer = EntryAccessHistorySerializer(history, many=True, context={'request': request})
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 

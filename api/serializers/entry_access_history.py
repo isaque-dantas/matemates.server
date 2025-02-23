@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from api.models import EntryAccessHistory
+from api.services.entry import EntryService
 
 
 class EntryAccessHistorySerializer(serializers.ModelSerializer):
@@ -10,6 +11,5 @@ class EntryAccessHistorySerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         return {
             'access_moment': instance.access_moment,
-            'entry_content': instance.entry.content,
-            'entry_id': instance.entry.pk
+            'entry': EntryService.to_representation(instance.entry, self.context)
         }
