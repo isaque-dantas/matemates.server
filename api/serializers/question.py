@@ -26,7 +26,7 @@ class QuestionSerializer(serializers.ModelSerializer):
         errors = []
 
         if self.context.get('is_creation') and not attrs.get("entry"):
-            errors.append({"entry": "É obrigatório informar o 'id' do verbete na criação do exemplo."})
+            errors.append("É obrigatório informar o 'id' do verbete na criação do exemplo.")
 
         if errors:
             raise ValidationError(errors)

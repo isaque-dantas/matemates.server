@@ -39,10 +39,10 @@ class ImageSerializer(serializers.ModelSerializer):
         errors = []
 
         if not self.context.get('is_update') and 'content' not in attrs:
-            errors.append({"content": 'O conteúdo da imagem é obrigatório.'})
+            errors.append('O conteúdo da imagem é obrigatório.')
 
         if self.context.get('is_creation') and not attrs.get("entry"):
-            errors.append({"entry": "É obrigatório informar o 'id' do verbete na criação da definição."})
+            errors.append("É obrigatório informar o 'id' do verbete na criação da imagem.")
 
         if errors:
             raise ValidationError(errors)

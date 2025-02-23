@@ -35,10 +35,10 @@ class DefinitionSerializer(ModelSerializer):
         errors = []
 
         if self.context.get('is_creation') and not attrs.get("entry"):
-            errors.append({"entry": "É obrigatório informar o 'id' do verbete na criação da definição."})
+            errors.append("É obrigatório informar o 'id' do verbete na criação da definição.")
 
         if not attrs.get("knowledge_area__content", None):
-            errors.append({"knowledge_area__content": "É obrigatório informar a área do conhecimento."})
+            errors.append("É obrigatório informar a área do conhecimento.")
 
         try:
             DefinitionService.validate_knowledge_area__content(attrs["knowledge_area__content"])
