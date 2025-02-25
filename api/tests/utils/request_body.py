@@ -10,15 +10,19 @@ class RequestBody:
                 "main_term_gender": "M",
                 "main_term_grammatical_category": "substantivo",
                 "definitions": [
-                    {"content": "Ângulo cuja medida é de 90°.", "knowledge_area__content": "álgebra"},
-                    {"content": "Alguma outra definição.", "knowledge_area__content": "álgebra"},
+                    {"content": "Ângulo com valor de 90°. Semirretas que formam um ângulo de 90º são chamadas de perpendiculares.", "knowledge_area__content": "geometria"},
+                    {"content": "Parte da definição de um retângulo, polígono que tem seus quatro ângulos internos classificados como retos", "knowledge_area__content": "geometria"},
                 ],
                 "images": [
-                    {"caption": "ângulo reto na imagem", "base64_image": base64_encoded_files.ANGULO_RETO, "id": None},
-                    {"caption": "outro ângulo reto", "base64_image": base64_encoded_files.ANGULO_RETO, "id": None},
+                    {"caption": "Ângulo reto na imagem", "base64_image": base64_encoded_files.ANGULO_RETO, "id": None},
+                    {"caption": "A mesma imagem, com outra legenda", "base64_image": base64_encoded_files.ANGULO_RETO,
+                     "id": None},
                 ],
                 "questions": [
-                    {"statement": "Um quadrado tem ângulos retos?", "answer": "Sim."},
+                    {
+                        "statement": "Quantos ângulos retos tem um quadrado?",
+                        "answer": "Todos os ângulos internos de um quadrado são retos. Ou seja, há quatro deles."
+                    },
                 ],
             },
             "calculadora": {
@@ -26,22 +30,131 @@ class RequestBody:
                 "main_term_gender": "F",
                 "main_term_grammatical_category": "substantivo",
                 "definitions": [
-                    {"content": "Dispositivo eletrônico usado para efetuar cálculos matemáticos.",
-                     "knowledge_area__content": "álgebra"},
-                    {"content": "Um homem, uma máquina, um fantástico espetáculo.",
-                     "knowledge_area__content": "estatística"},
+                    {
+                        "content": "Dispositivo eletrônico usado para efetuar cálculos matemáticos.",
+                        "knowledge_area__content": "álgebra"
+                    },
+                    {
+                        "content": "Máquina que efetua operações de aritmética.",
+                        "knowledge_area__content": "álgebra"
+                    },
                 ],
                 "images": [
-                    {"caption": "ângulo reto na imagem", "base64_image": base64_encoded_files.CALCULADORA, "id": None},
-                    {"caption": "outro ângulo reto", "base64_image": base64_encoded_files.ANGULO_RETO, "id": None},
+                    {"caption": "Ilustração de uma calculadora", "base64_image": base64_encoded_files.CALCULADORA, "id": None}
+                ],
+                "questions": []
+            },
+            "abaco": {
+                "content": "á.ba.co",
+                "main_term_gender": "M",
+                "main_term_grammatical_category": "substantivo",
+                "definitions": [
+                    {
+                        "content": "Instrumento que possui uma base e hastes perpendiculares que indicam as ordens numéricas (unidade, dezena, centena, etc) e bolinhas ou discos nessas hastes representando uma unidade dessa ordem específica",
+                        "knowledge_area__content": "álgebra"
+                    },
+                ],
+                "images": [
+                    {"caption": "Ábaco simples, com hastes horizontais.", "base64_image": base64_encoded_files.ABACO, "id": None}
+                ],
+                "questions": []
+            },
+            "funcao": {
+                "content": "fun.ção",
+                "main_term_gender": "F",
+                "main_term_grammatical_category": "substantivo",
+                "definitions": [
+                    {
+                        "content": "Corresponde ao conjunto de pares de valores de duas variáveis, em que há uma independente e outra, originária dessa, que é chamada de dependente.",
+                        "knowledge_area__content": "álgebra"
+                    },
+                    {
+                        "content": "Relação de correspondência entre os valores de dois conjuntos, X (chamado de domínio) e Y (imagem ou contradomínio), em que seja possível associar cada elemento de X a apenas um elemento de Y. Formalmente, essa é uma função f: X -> Y, ou f(x) = y.",
+                        "knowledge_area__content": "álgebra"
+                    },
+                ],
+                "images": [
+                    {"caption": "Exemplo de uma função", "base64_image": base64_encoded_files.FUNCAO, "id": None}
                 ],
                 "questions": [
-                    {"statement": "Quantas galinhas um ovo consegue pôr?",
-                     "answer": "Aproximadamente o que uma calculadora pode computar."},
+                    {"statement": "A relação entre os dias do ano e se é feriado ou não é um exemplo de função?", "answer": "Sim, já que cada dia tem apenas um valor associado: \"verdadeiro\" ou \"falso\"."}
+                ]
+            },
+            "tetraedro": {
+                "content": "te.tra.e.dro",
+                "main_term_gender": "M",
+                "main_term_grammatical_category": "substantivo",
+                "definitions": [
+                    {
+                        "content": "Poliedro com 4 faces poligonais. O tetraedro regular é composto por quatro faces no formato de triângulos equiláteros.",
+                        "knowledge_area__content": "geometria"
+                    },
+                    {
+                        "content": "Sólido cuja superfície é formada por quatro faces triangulares.",
+                        "knowledge_area__content": "geometria"
+                    },
                 ],
+                "images": [
+                    {"caption": "Ilustração de um tetraedro regular", "base64_image": base64_encoded_files.TETRAEDRO, "id": None}
+                ],
+                "questions": []
+            },
+            "dados": {
+                "content": "da.dos",
+                "main_term_gender": "M",
+                "main_term_grammatical_category": "substantivo",
+                "definitions": [
+                    {
+                        "content": "Registros de observações ou fatos do mundo real, mas desprovidos de seu contexto original. Por exemplo, “camisa”, “2007” e “Bonifácio” são dados.",
+                        "knowledge_area__content": "estatística"
+                    },
+                    {
+                        "content": "Objetos na forma de sólidos geométricos usados para sortear números, letras ou símbolos. Há aqueles com quatro, cinco, seis e até 20 faces, todos com aplicações diversas, que vão desde jogos de tabuleiro até o estudo de probabilidade e estatística.",
+                        "knowledge_area__content": "geometria"
+                    },
+                ],
+                "images": [
+                    {"caption": "Dado de vinte faces, comumente usado em RPGs (role-playing game – jogo de interpretação de papéis, em tradução livre).", "base64_image": base64_encoded_files.DADO, "id": None}
+                ],
+                "questions": []
+            },
+            "diagrama-venn": {
+                "content": "*di.a.gra.ma* de Venn",
+                "main_term_gender": "M",
+                "main_term_grammatical_category": "substantivo",
+                "definitions": [
+                    {
+                        "content": "O diagrama de Venn é uma forma de representar graficamente conjuntos e suas operações por meio de circunferências, onde cada uma delas representa um conjunto. Com ele, é possível solucionar vários problemas apenas com cálculos simples.",
+                        "knowledge_area__content": "álgebra"
+                    },
+                ],
+                "images": [
+                    {"caption": "Típica ilustração de um diagrama de Venn, com três conjuntos que se intersectam mutuamente.", "base64_image": base64_encoded_files.VENN, "id": None}
+                ],
+                "questions": []
+            },
+            "eneagono": {
+                "content": "e.ne.á.go.no",
+                "main_term_gender": "M",
+                "main_term_grammatical_category": "substantivo",
+                "definitions": [
+                    {
+                        "content": "Polígono com 9 lados, regular ou não, cuja soma interna dos ângulos resulta em 1260 graus.",
+                        "knowledge_area__content": "geometria"
+                    },
+                    {
+                        "content": "Polígono de nove lados e nove ângulos.",
+                        "knowledge_area__content": "geometria"
+                    },
+                ],
+                "images": [
+                    {"caption": "Eneágono regular.", "base64_image": base64_encoded_files.ENEAGONO, "id": None}
+                ],
+                "questions": []
             }
         },
         "knowledge_area": {
+            "geometria": {"content": "geometria"},
             "estatistica": {"content": "estatística"},
             "algebra": {"content": "álgebra"},
             "calculo": {"content": "cálculo"},

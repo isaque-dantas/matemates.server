@@ -91,6 +91,7 @@ class DatabaseUtils(ABC):
 
         request_data = RequestBody.get_data(self.__entity_name, data_identifier)
         serializer = self.__serializer(data=request_data)
+        log.debug("")
         serializer.is_valid(raise_exception=True)
         self.__service.create(serializer)
 

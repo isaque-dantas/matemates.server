@@ -62,8 +62,8 @@ class EntrySerializer(serializers.ModelSerializer):
         else:
             data["definitions"].validate(data["definitions"])
 
-        if not data['questions'].initial_data:
-            errors.append(f"O campo 'questions' é obrigatório.")
+        # if not data['questions'].initial_data:
+        #     errors.append(f"O campo 'questions' é obrigatório.")
 
         if errors:
             raise ValidationError(errors)
