@@ -17,7 +17,7 @@ class EntryAccessHistoryService:
 
     @staticmethod
     def get_from_user(user_id: int) -> list[EntryAccessHistory]:
-        return EntryAccessHistory.objects.filter(user_id=user_id).all()
+        return EntryAccessHistory.objects.filter(user_id=user_id)[:10].all()
 
     @classmethod
     def get_most_accessed(cls):
