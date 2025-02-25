@@ -354,7 +354,7 @@ class EntryServiceTestCase(APITestCase):
         self.assertEqual(len(entries), 1)
         self.assertEqual(entries[0].content, "calculadora")
 
-    def test_search_by_content__a__should_return_two_entries(self):
+    def test_search_by_content__o__should_return_two_entries(self):
         self.knowledge_area_utils.create_all()
         self.entry_utils.set_database_environment({"angulo-reto": True, "calculadora": True})
 
@@ -406,13 +406,17 @@ class EntryServiceTestCase(APITestCase):
 
         self.assertTrue(self.entry_utils.retrieve("calculadora").is_validated)
 
-    def test_patch__on_happy_path__should_patch(self):
+    def test_patch__many_changes__should_patch(self):
         self.knowledge_area_utils.create_all()
         self.entry_utils.set_database_environment({"calculadora": True})
 
         entry = self.entry_utils.retrieve("calculadora")
 
-        serializer = EntrySerializer(entry, data={"content": "po.ta.to.es", "main_term_grammatical_category": "verbo"}, context={"is_patch": True})
+        serializer = EntrySerializer(
+            entry,
+            data={"content": "po.ta.to.es", "main_term_grammatical_category": "verbo"},
+            context={"is_patch": True}
+        )
         serializer.is_valid(raise_exception=True)
         EntryService.patch(serializer)
 
@@ -421,3 +425,26 @@ class EntryServiceTestCase(APITestCase):
         log.debug(new_entry)
         self.assertEqual(new_entry.content, "potatoes")
         self.assertEqual(main_term.grammatical_category, "verbo")
+        # self.assertListEqual(list(main_term.syllables), ['po', 'ta', 'to', 'es'])
+
+    def test_patch__only_content_and_different_terms_quantity__should_do_it(self):
+        self.knowledge_area_utils.create_all()
+        self.entry_utils.set_database_environment({"calculadora": True})
+
+        entry = self.entry_utils.retrieve("calculadora")
+
+        serializer = EntrySerializer(
+            entry,
+            data={"content": "cal.cu.la.do.ra *am.bu.lan.te*"},
+            context={"is_patch": True}
+        )
+
+        serializer.is_valid(raise_exception=True)
+        EntryService.patch(serializer)
+
+        new_entry = Entry.objects.get(pk=entry.pk)
+        main_term = TermService.get_main_from_entry(new_entry)
+        log.debug(new_entry)
+        self.assertEqual(new_entry.content, "potatoes")
+        self.assertEqual(main_term.grammatical_category, "verbo")
+        # self.assertListEqual(list(main_term.syllables), ['po', 'ta', 'to', 'es'])

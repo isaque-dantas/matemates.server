@@ -75,7 +75,6 @@ class SingleEntryView(APIView):
         ):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        log.debug(f"{request.user=}")
         if request.user:
             EntryAccessHistoryService.register(user_id=request.user.pk, entry_id=pk)
 

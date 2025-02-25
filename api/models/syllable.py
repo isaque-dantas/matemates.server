@@ -10,6 +10,6 @@ class SyllableManager(models.Manager):
 
 class Syllable(models.Model):
     content = models.CharField(max_length=16, blank=False)
-    term = models.ForeignKey(Term, on_delete=models.CASCADE)
+    term = models.ForeignKey(Term, on_delete=models.CASCADE, related_name='syllables')
 
     objects = SyllableManager()

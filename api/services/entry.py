@@ -262,9 +262,12 @@ class EntryService:
 
         log.debug(f"{data=}")
 
-        if "content" in data:
+        if data.get("content"):
+            TermService.update_related_to_entry(instance, data)
+
             instance.content = cls.parse_content(data.get("content"))
             instance.save()
+            return None
 
         main_term = TermService.get_main_from_entry(instance)
 
