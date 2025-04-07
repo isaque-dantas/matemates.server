@@ -28,7 +28,6 @@ class EahServiceTestCase(TestCase):
             EntryAccessHistory.objects.filter(entry__pk=entry_id, user__pk=user_id).exists()
         )
 
-
     def test_get_from_user__on_happy_path__should_return_entities(self):
         self.knowledge_area_utils.create_all()
         self.entry_utils.set_database_environment({"calculadora": True})
@@ -41,6 +40,25 @@ class EahServiceTestCase(TestCase):
         eah_list = EntryAccessHistoryService.get_from_user(user_id=user_id)
 
         self.assertTrue(eah_list)
+
+    def test_get_from_user__more_than_10_registres_in_db__should_return_the_last_ones(self):
+        self.knowledge_area_utils.create_all()
+        self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
+        self.user_utils.set_database_environment({"admin-user": True})
+
+        angulo_reto = self.entry_utils.retrieve("angulo-reto")
+        calculadora_id = self.entry_utils.retrieve("calculadora").pk
+        user_id = self.user_utils.retrieve("admin-user").pk
+
+        for i in range(10):
+            EntryAccessHistory.objects.create(entry_id=calculadora_id, user_id=user_id)
+
+        EntryAccessHistory.objects.create(entry_id=angulo_reto.pk, user_id=user_id)
+
+        eah_list = EntryAccessHistoryService.get_from_user(user_id=user_id)
+
+        self.assertEqual(eah_list[0], angulo_reto)
+
 
 class EahViewTestCase(TestCase):
     knowledge_area_utils = KnowledgeAreaUtils()
