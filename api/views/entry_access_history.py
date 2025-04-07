@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 from api.serializers.entry import EntrySerializer
 from api.serializers.entry_access_history import EntryAccessHistorySerializer
 from api.services.entry_access_history import EntryAccessHistoryService
+from api.services.user import UserService
 
 
 class EntryAccessHistoryView(APIView):
@@ -21,7 +22,10 @@ class EntryAccessHistoryView(APIView):
 
 @api_view(['GET'])
 def get_most_accessed_entries(request):
-    entries = EntryAccessHistoryService.get_most_accessed()
+    entries = EntryAccessHistoryService.get_most_accessed(
+        not UserService.can_see_non_validated_entries(request.user)
+    )
+
     serializer = EntrySerializer(entries, many=True)
 
     return Response(serializer.data, status=status.HTTP_200_OK)
