@@ -75,7 +75,7 @@ class SingleEntryView(APIView):
         ):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        if request.user:
+        if request.user.is_authenticated:
             EntryAccessHistoryService.register(user_id=request.user.pk, entry_id=pk)
 
         serializer = EntrySerializer(entry, context={'request': request})
