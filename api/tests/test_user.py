@@ -76,8 +76,10 @@ class UserTests(APITestCase):
         self.assertIn('refresh', response.data)
 
     def test_login_with_wrong_credentials__should_return_UNAUTHORIZED(self):
-        data = {"username": 'non-existent-user', "password": 'wrong-password'}
+        data = {"email": 'wrong_email@email.com', "password": 'wrong-password'}
         response = self.client.post(f'{BASE_URL}/token', data)
+
+        log.debug(response)
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 

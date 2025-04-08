@@ -2,6 +2,7 @@ from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from api.views import knowledge_area, user, entry, image, definition, question, entry_access_history
+# from api.views.email_token_obtain_pair_serializer import EmailTokenObtainPairView
 
 entry_urls = [
     path('entry', entry.EntryView.as_view(), name='entry-list'),
