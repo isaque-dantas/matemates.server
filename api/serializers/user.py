@@ -34,12 +34,15 @@ class UserSerializer(serializers.ModelSerializer):
         if self.context.get('is_profile_image_update'):
             return attrs
 
-        required_fields = ['name', 'username', 'email', 'password']
+        required_fields = ['name', 'username', 'email']
         errors = [
             f"O campo '{field}' é obrigatório."
             for field in required_fields
             if not attrs.get(field)
         ]
+
+        if not self.context.get('is_update') and not attrs.get('password'):
+            errors.append('A senha é obrigatória')
 
         if errors:
             raise ValidationError(errors)
