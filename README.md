@@ -25,3 +25,5 @@ Este é o projeto integrador dos estudantes Davi Lucas, Isaque Dantas e Lucas He
 - Entre no ambiente virtual com . venv/bin/activate
 - Baixar as dependências do Django rest com pip install -r requirements.txt
 - Rode o servidor com python manage.py runserver
+
+No Ubuntu 22.04 ou superior, instalar `sudo apt install python3-dev default-libmysqlclient-dev build-essential pkg-config`
