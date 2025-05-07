@@ -20,8 +20,15 @@ CREATE TABLE `api_entry`
 CREATE TABLE `api_knowledgearea`
 (
     `id`      bigint AUTO_INCREMENT NOT NULL PRIMARY KEY,
-    `content` varchar(128)          NOT NULL UNIQUE,
-    `subject` varchar(128)          NOT NULL
+    `content` varchar(128)          NOT NULL UNIQUE
+);
+
+CREATE TABLE `api_entryaccesshistory`
+(
+    `id`            bigint AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    `access_moment` datetime(6)           NOT NULL,
+    `entry_id`      bigint                NOT NULL,
+    `user_id`       bigint                NOT NULL
 );
 
 CREATE TABLE `api_image`
@@ -50,11 +57,10 @@ CREATE TABLE `api_definition`
 
 CREATE TABLE `api_question`
 (
-    `id`          bigint AUTO_INCREMENT NOT NULL PRIMARY KEY,
-    `statement`   varchar(256)          NOT NULL,
-    `answer`      varchar(256)          NOT NULL,
-    `explanation` varchar(256)          NOT NULL,
-    `entry_id`    bigint                NOT NULL
+    `id`        bigint AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    `statement` varchar(256)          NOT NULL,
+    `answer`    varchar(256)          NOT NULL,
+    `entry_id`  bigint                NOT NULL
 );
 
 CREATE TABLE `api_term`
@@ -74,30 +80,29 @@ CREATE TABLE `api_syllable`
     `term_id` bigint                NOT NULL
 );
 
+ALTER TABLE `api_entryaccesshistory`
+    ADD CONSTRAINT `api_entryaccesshistory_entry_id_d2db1af6_fk_api_entry_id` FOREIGN KEY (`entry_id`) REFERENCES `api_entry` (`id`);
+
+ALTER TABLE `api_entryaccesshistory`
+    ADD CONSTRAINT `api_entryaccesshistory_user_id_d0e8ef3c_fk_api_user_id` FOREIGN KEY (`user_id`) REFERENCES `api_user` (`id`);
+
 ALTER TABLE `api_image`
-    ADD CONSTRAINT `api_image_entry_id_7287b5c0_fk_api_entry_id`
-        FOREIGN KEY (`entry_id`) REFERENCES `api_entry` (`id`);
+    ADD CONSTRAINT `api_image_entry_id_7287b5c0_fk_api_entry_id` FOREIGN KEY (`entry_id`) REFERENCES `api_entry` (`id`);
 
 ALTER TABLE `api_invitedemail`
-    ADD CONSTRAINT `api_invitedemail_user_who_invited_id_73a51900_fk_api_user_id`
-        FOREIGN KEY (`user_who_invited_id`) REFERENCES `api_user` (`id`);
+    ADD CONSTRAINT `api_invitedemail_user_who_invited_id_73a51900_fk_api_user_id` FOREIGN KEY (`user_who_invited_id`) REFERENCES `api_user` (`id`);
 
 ALTER TABLE `api_definition`
-    ADD CONSTRAINT `api_definition_entry_id_0ebeb240_fk_api_entry_id`
-        FOREIGN KEY (`entry_id`) REFERENCES `api_entry` (`id`);
+    ADD CONSTRAINT `api_definition_entry_id_0ebeb240_fk_api_entry_id` FOREIGN KEY (`entry_id`) REFERENCES `api_entry` (`id`);
 
 ALTER TABLE `api_definition`
-    ADD CONSTRAINT `api_definition_knowledge_area_id_acfcfe70_fk_api_knowl`
-        FOREIGN KEY (`knowledge_area_id`) REFERENCES `api_knowledgearea` (`id`);
+    ADD CONSTRAINT `api_definition_knowledge_area_id_acfcfe70_fk_api_knowl` FOREIGN KEY (`knowledge_area_id`) REFERENCES `api_knowledgearea` (`id`);
 
 ALTER TABLE `api_question`
-    ADD CONSTRAINT `api_question_entry_id_2de877d5_fk_api_entry_id`
-        FOREIGN KEY (`entry_id`) REFERENCES `api_entry` (`id`);
+    ADD CONSTRAINT `api_question_entry_id_2de877d5_fk_api_entry_id` FOREIGN KEY (`entry_id`) REFERENCES `api_entry` (`id`);
 
 ALTER TABLE `api_term`
-    ADD CONSTRAINT `api_term_entry_id_890d79ea_fk_api_entry_id`
-        FOREIGN KEY (`entry_id`) REFERENCES `api_entry` (`id`);
+    ADD CONSTRAINT `api_term_entry_id_890d79ea_fk_api_entry_id` FOREIGN KEY (`entry_id`) REFERENCES `api_entry` (`id`);
 
 ALTER TABLE `api_syllable`
-    ADD CONSTRAINT `api_syllable_term_id_ab166577_fk_api_term_id`
-        FOREIGN KEY (`term_id`) REFERENCES `api_term` (`id`);
+    ADD CONSTRAINT `api_syllable_term_id_ab166577_fk_api_term_id` FOREIGN KEY (`term_id`) REFERENCES `api_term` (`id`);
