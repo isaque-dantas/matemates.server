@@ -36,11 +36,41 @@ class EntryService:
 
     @staticmethod
     def parse_content(content: str):
-        return content.replace("*", "").replace(".", "")
+        return content.strip().replace("*", "").replace(".", "")
 
     @staticmethod
     def content_already_exists(content: str):
         return Entry.objects.filter(content=EntryService.parse_content(content)).exists()
+
+    @staticmethod
+    def validate_content(instance: Entry, value: str):
+        errors = []
+
+        value = value.strip()
+
+        it_is_updating_to_the_same_value = (
+                instance is not None
+                and
+                EntryService.parse_content(value) == instance.content
+        )
+
+        if EntryService.content_already_exists(value) and not it_is_updating_to_the_same_value:
+            errors.append(f"'{value}' already exists")
+
+        log.debug(f"{value=}")
+
+        stars_errors: list = EntryService.get_stars_formatting_errors(value)
+        if stars_errors:
+            errors.extend(stars_errors)
+
+        log.debug(f"{stars_errors=}")
+
+        dots_errors: list = EntryService.get_dots_formatting_errors(value)
+        if dots_errors:
+            errors.extend(dots_errors)
+
+        if errors:
+            raise serializers.ValidationError(errors)
 
     @staticmethod
     def get_stars_formatting_errors(content: str) -> list:
@@ -111,32 +141,21 @@ class EntryService:
 
     @staticmethod
     def get_all_related_to_knowledge_area(knowledge_area_content: str, should_get_only_validated: bool):
-        definitions = Definition.objects.filter(
-            knowledge_area__content=knowledge_area_content
-        ).select_related("entry")
-
-        log.debug(f"{len(definitions)=}")
-
-        entries = [definition.entry for definition in definitions]
-
-        entries_ids = [entry.pk for entry in entries]
-        duplicated_ids = filter(lambda e: entries_ids.count(e) >= 2, entries_ids)
-        duplicated_ids = list(set(duplicated_ids))
-
-        non_duplicated_entries = [
-            entry
-            for entry in entries
-            if entry.pk not in duplicated_ids
-        ]
-
-        for duplicated_id in duplicated_ids:
-            entry = next(filter(lambda e: e.pk == duplicated_id, entries))
-            non_duplicated_entries.append(entry)
-
         if should_get_only_validated:
-            return list(filter(lambda e: e.is_validated, non_duplicated_entries))
+            return (
+                Entry.objects
+                .filter(
+                    is_validated=should_get_only_validated,
+                    definitions__knowledge_area__content=knowledge_area_content
+                )
+                .distinct().all()
+            )
 
-        return non_duplicated_entries
+        return (
+            Entry.objects
+            .filter(definitions__knowledge_area__content=knowledge_area_content)
+            .distinct().all()
+        )
 
     @staticmethod
     def get_data_from_instances(entries: list[Entry]):
@@ -152,7 +171,7 @@ class EntryService:
             if data["base64_image"] == ''
         ]
 
-        log.debug(f"{entry_data['images']=}")
+        # log.debug(f"{entry_data['images']=}")
         log.debug(f"{images_ids_that_must_not_be_updated=}")
 
         entry_data["images"] = [
@@ -169,6 +188,7 @@ class EntryService:
 
     @staticmethod
     def delete(pk: int):
+
         EntryService.get(pk).delete()
 
     @staticmethod
@@ -217,9 +237,53 @@ class EntryService:
 
     @staticmethod
     def search_by_content(search_query: str, should_get_only_validated: bool):
+        if should_get_only_validated:
+            return (
+                Entry.objects
+                .filter(content__contains=search_query, is_validated=True)
+                .distinct()
+                .all()
+            )
+
         return (
-            Entry.objects
-            .filter(content__contains=search_query, is_validated=should_get_only_validated)
-            .distinct()
-            .all()
+            Entry.objects.filter(content__contains=search_query).distinct().all()
         )
+
+    @classmethod
+    def patch(cls, serializer):
+        data = serializer.validated_data
+        instance: Entry = serializer.instance
+
+        log.debug(f"{data=}")
+
+        if data.get("content"):
+            TermService.update_related_to_entry(instance, data)
+
+            instance.content = cls.parse_content(data.get("content"))
+            instance.save()
+            return None
+
+        main_term = TermService.get_main_from_entry(instance)
+
+        if (
+                not data.get("main_term_grammatical_category") and
+                not data.get("main_term_gender")
+        ):
+            return None
+
+        if data.get("main_term_grammatical_category"):
+            main_term.grammatical_category = data.get("main_term_grammatical_category")
+
+        if data.get("main_term_gender"):
+            main_term.gender = data.get("main_term_gender")
+
+        log.debug(f"{main_term=}")
+        log.debug(f"{data.get('main_term_grammatical_category')=}")
+        log.debug(f"{data.get('main_term_gender')=}")
+        main_term.save()
+
+    @classmethod
+    def make_entry_validated(cls, pk: int):
+        entry = cls.get(pk)
+        entry.is_validated = True
+        entry.save()

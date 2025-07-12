@@ -1,3 +1,5 @@
+from django.contrib.auth.models import AnonymousUser
+
 from api import log
 from api.models import User, InvitedEmail
 from matemates_server import settings
@@ -5,17 +7,19 @@ from matemates_server import settings
 
 class UserService:
     @staticmethod
-    def create(validated_data):
-        validated_data['is_staff'] = (
-                validated_data['email'] == settings.ADMIN_EMAIL
-                or
-                InvitedEmail.objects.filter(email=validated_data['email']).exists()
-        )
+    def create(serializer):
+        validated_data = serializer.validated_data
 
-        log.debug(f"{(validated_data['email'] == settings.ADMIN_EMAIL)=}")
-        log.debug(f"{InvitedEmail.objects.filter(email=validated_data['email']).exists()=}")
+        data = {
+            **validated_data,
+            'is_staff': (
+                    validated_data['email'] == settings.ADMIN_EMAIL
+                    or
+                    InvitedEmail.objects.filter(email=validated_data['email']).exists()
+            )
+        }
 
-        return User.objects.create_user(**validated_data)
+        return User.objects.create_user(**data)
 
     @staticmethod
     def update(instance, validated_data):
@@ -52,3 +56,15 @@ class UserService:
 
         invited_email = InvitedEmail(email=email, user_who_invited=user_who_invited)
         invited_email.save()
+
+    @staticmethod
+    def can_see_non_validated_entries(user: AnonymousUser | User) -> bool:
+        return user.is_authenticated and user.is_staff
+
+    @staticmethod
+    def update_profile_image(serializer):
+        data = serializer.validated_data
+        instance: User = serializer.instance
+
+        instance.profile_image.delete()
+        instance.profile_image.save("foo.png", data["profile_image_base64"])

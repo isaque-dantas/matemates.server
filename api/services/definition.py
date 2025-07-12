@@ -1,7 +1,8 @@
+import django.db.models
 from rest_framework.exceptions import ValidationError
 
 from api import log
-from api.models import Definition, KnowledgeArea
+from api.models import Definition, KnowledgeArea, Entry
 from api.services.knowledge_area import KnowledgeAreaService
 
 
@@ -19,12 +20,12 @@ class DefinitionService:
         ]
 
         return Definition.objects.create(
-            [DefinitionService.create(data, entry) for data in data_list]
+            [DefinitionService.get_instance_from_data(data, entry) for data in data_list]
         )
 
     @staticmethod
-    def create(data, entry):
-        log.debug(f"{data['knowledge_area']=}")
+    def get_instance_from_data(data, entry):
+        # log.debug(f"{data['knowledge_area']=}")
         return Definition(content=data["content"], entry=entry, knowledge_area=data["knowledge_area"])
 
     @staticmethod
@@ -52,3 +53,46 @@ class DefinitionService:
     def validate_knowledge_area__content(value):
         if not DefinitionService.does_knowledge_area_content_exist(value):
             raise ValidationError(f"KnowledgeArea content '{value}' does not exist in database")
+
+    @staticmethod
+    def exists(pk):
+        return Definition.objects.filter(pk=pk).exists()
+
+    @staticmethod
+    def get(pk):
+        return Definition.objects.get(pk=pk)
+
+    @staticmethod
+    def is_parent_validated(pk):
+        return DefinitionService.get(pk).entry.is_validated
+
+    @staticmethod
+    def update(serializer):
+        instance: django.db.models.Model = serializer.instance
+        data = serializer.validated_data
+
+        log.debug(f"{data=}")
+        log.debug(f"{serializer.data=}")
+        log.debug(f"{serializer.initial_data=}")
+        log.debug(f"{serializer.errors=}")
+        log.debug(f"{instance=}")
+
+        instance.content = data["content"]
+        instance.knowledge_area = KnowledgeAreaService.get_by_content(data["knowledge_area__content"])
+        instance.save()
+
+    @staticmethod
+    def delete(pk):
+        Definition.objects.filter(pk=pk).delete()
+
+    @classmethod
+    def create(cls, serializer):
+        data = serializer.validated_data
+
+        knowledge_area = KnowledgeAreaService.get_by_content(data["knowledge_area__content"])
+        data.update({"knowledge_area": knowledge_area})
+
+        definition = cls.get_instance_from_data(data, data["entry"])
+        definition.save()
+
+        return definition

@@ -1,17 +1,20 @@
+from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 from api import log
 from api.models import InvitedEmail
+from api.serializers.user import UserSerializer
+from api.services.user import UserService
 from api.tests import BASE_URL
-from api.tests.user_utils import UserTestsUtils
+from api.tests.utils.user_utils import UserUtils
 from matemates_server import settings
+from api.tests.utils.base64_encoded_files import DOG, CALCULADORA
+from matemates_server.settings import BASE_DIR
 
-
-# TODO: add Invited Email instance to database when a user is invited to be admin
 
 class UserTests(APITestCase):
-    utils = UserTestsUtils()
+    utils = UserUtils()
 
     def test_post__on_happy_path__should_return_OK(self):
         self.utils.set_database_environment({'common-user': False})
@@ -21,8 +24,6 @@ class UserTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertNotIn('password', response.data)
         self.assertFalse(response.data['is_staff'])
-
-        self.utils.refresh_tokens()
 
     def test_post__with_non_existent_field__should_return_CREATED(self):
         self.utils.set_database_environment({'common-user': False})
@@ -34,15 +35,11 @@ class UserTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertNotIn('non_existent_field', response.data)
 
-        self.utils.refresh_tokens()
-
     def test_post__with_repeated_unique_attributes__should_return_BAD_REQUEST(self):
         self.utils.set_database_environment({'common-user': True})
 
         response = self.client.post(f'{BASE_URL}/users', data=self.utils.common_user_data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-        self.utils.refresh_tokens()
 
     def test_post__with_admin_email__should_return_CREATED(self):
         self.utils.set_database_environment({'admin-user': False})
@@ -56,8 +53,6 @@ class UserTests(APITestCase):
         self.assertIn('is_staff', response.data)
         self.assertTrue(response.data['is_staff'])
 
-        self.utils.refresh_tokens()
-
     def test_post__without_image__should_return_CREATED(self):
         self.utils.set_database_environment({'admin-user': False})
 
@@ -70,8 +65,6 @@ class UserTests(APITestCase):
         self.assertIn('is_staff', response.data)
         self.assertTrue(response.data['is_staff'])
 
-        self.utils.refresh_tokens()
-
     def test_login_on_happy_path__should_return_OK(self):
         self.utils.set_database_environment({'common-user': True})
 
@@ -83,8 +76,10 @@ class UserTests(APITestCase):
         self.assertIn('refresh', response.data)
 
     def test_login_with_wrong_credentials__should_return_UNAUTHORIZED(self):
-        data = {"username": 'non-existent-user', "password": 'wrong-password'}
+        data = {"email": 'wrong_email@email.com', "password": 'wrong-password'}
         response = self.client.post(f'{BASE_URL}/token', data)
+
+        log.debug(response)
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
@@ -111,10 +106,8 @@ class UserTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-        edited_user = self.utils.retrieve_user('common-user')
+        edited_user = self.utils.retrieve('common-user')
         self.assertEqual(edited_user.name, edited_data['name'])
-
-        self.utils.refresh_tokens()
 
     def test_put_with_username_from_another_user__should_return_BAD_REQUEST(self):
         self.utils.set_database_environment({'admin-user': True, 'common-user': True})
@@ -124,7 +117,7 @@ class UserTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-        user = self.utils.retrieve_user(self.utils.common_user_data['username'])
+        user = self.utils.retrieve(self.utils.common_user_data['username'])
         self.assertNotEqual(user.username, self.utils.admin_user_data['username'])
 
     def test_delete_on_happy_path__should_return_NO_CONTENT(self):
@@ -133,13 +126,9 @@ class UserTests(APITestCase):
         response = self.client.delete(f'{BASE_URL}/users', headers=self.utils.common_credentials)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-        self.utils.refresh_tokens()
-
     def test_delete_without_credentials__should_return_UNAUTHORIZED(self):
         response = self.client.delete(f'{BASE_URL}/users')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-        self.utils.refresh_tokens()
 
     def test_turn_other_existent_user_admin__should_return_OK(self):
         self.utils.set_database_environment({'admin-user': True, 'common-user': True})
@@ -152,7 +141,7 @@ class UserTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-        common = self.utils.retrieve_user('common-user')
+        common = self.utils.retrieve('common-user')
         self.assertTrue(common.is_staff)
 
         self.utils.set_database_environment({'common-user': False})
@@ -168,4 +157,64 @@ class UserTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-        self.assertTrue(InvitedEmail.objects.filter(email=self.utils.common_user_data['email']).exists() )
+        self.assertTrue(InvitedEmail.objects.filter(email=self.utils.common_user_data['email']).exists())
+
+
+class UserSerializerTestCase(TestCase):
+    user_utils = UserUtils()
+
+    def test_is_valid__on_happy_path__should_return_VALID(self):
+        serializer = UserSerializer(
+            data={
+                "name": "New User",
+                "username": "new-user",
+                "password": "password",
+                "email": "email@email.com",
+            }
+        )
+
+        serializer.is_valid(raise_exception=True)
+        self.assertTrue(serializer.is_valid())
+
+    def test_is_valid__without_data__should_return_INVALID(self):
+        serializer = UserSerializer(data={})
+        log.debug(serializer.initial_data)
+        self.assertFalse(serializer.is_valid())
+
+    def test_is_valid__on_edit_profile_image__should_return_VALID(self):
+        serializer = UserSerializer(
+            data={"profile_image_base64": DOG},
+            context={'is_profile_image_update': True}
+        )
+
+        serializer.is_valid(raise_exception=True)
+        self.assertTrue(serializer.is_valid())
+
+    def test_is_valid__email_in_wrong_format__should_return_INVALID(self):
+        data = self.user_utils.get_data("common-user")
+        data["email"] = "invalid email"
+
+        serializer = UserSerializer(data=data)
+
+        self.assertFalse(serializer.is_valid())
+
+
+class UserServiceTestCase(TestCase):
+    user_utils = UserUtils()
+
+    def test_update_profile_image__on_happy_path__should_do_it(self):
+        self.user_utils.set_database_environment({"common-user": True})
+        user = self.user_utils.retrieve('common-user')
+
+        serializer = UserSerializer(
+            user,
+            data={"profile_image_base64": CALCULADORA},
+            context={"is_profile_image_update": True}
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        UserService.update_profile_image(serializer)
+        user_after_update = self.user_utils.retrieve('common-user')
+
+        self.assertEqual(user_after_update.profile_image.open().read(), open(f"{BASE_DIR}/api/tests/utils/calculadora.png", mode='rb').read())

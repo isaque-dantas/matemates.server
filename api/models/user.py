@@ -43,4 +43,4 @@ class User(AbstractBaseUser):
     profile_image = models.ImageField(blank=True, upload_to=user_directory_path)
 
     objects = UserManager()
-    USERNAME_FIELD = 'username'
+    USERNAME_FIELD = 'email'

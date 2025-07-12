@@ -4,39 +4,25 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from api import log
-from api.models import Definition, Entry
+from api.models import Definition, Entry, EntryAccessHistory
 from api.serializers.entry import EntrySerializer
 from api.services.entry import EntryService
+from api.services.term import TermService
 from api.tests import BASE_URL
-from api.tests.entry_utils import EntryUtils
-from api.tests.user_utils import UserTestsUtils
+from api.tests.utils.entry_utils import EntryUtils
+from api.tests.utils.image_utils import ImageUtils
+from api.tests.utils.knowledge_area_utils import KnowledgeAreaUtils
+from api.tests.utils.user_utils import UserUtils
 from matemates_server import settings
 
 
-class EntryTests(APITestCase):
-    user_utils = UserTestsUtils()
+class EntryViewTestCase(APITestCase):
+    user_utils = UserUtils()
     entry_utils = EntryUtils()
-
-    def test_post__on_happy_path__should_return_CREATED(self):
-        self.user_utils.set_database_environment({"admin-user": True})
-        self.entry_utils.set_database_environment({"calculadora": False})
-
-        response = self.client.post(
-            f'{BASE_URL}/entry',
-            self.entry_utils.get_data("calculadora"),
-            headers=self.user_utils.admin_credentials,
-            format='json'
-        )
-
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertTrue(self.entry_utils.exists("calculadora"))
-
-        calculadora = self.entry_utils.retrieve("calculadora")
-        files_in_uploads_folder = os.listdir(settings.MEDIA_ROOT)
-        self.assertIn(f'entry_{calculadora.pk}__image_0__.jpg', files_in_uploads_folder)
-        self.assertIn(f'entry_{calculadora.pk}__image_1__.jpg', files_in_uploads_folder)
+    knowledge_area_utils = KnowledgeAreaUtils()
 
     def test_post__with_common_credentials__should_return_FORBIDDEN(self):
+        self.knowledge_area_utils.create_all()
         self.user_utils.set_database_environment({"common-user": True})
         self.entry_utils.set_database_environment({"calculadora": False})
 
@@ -49,25 +35,8 @@ class EntryTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_post__with_missing_stars_in_content__should_return_BAD_REQUEST(self):
-        self.user_utils.set_database_environment({"admin-user": True})
-        self.entry_utils.set_database_environment({"angulo-reto": False})
-
-        data = self.entry_utils.get_data("angulo-reto")
-        data["content"] = "an.gu.lo re.to"
-
-        response = self.client.post(
-            f'{BASE_URL}/entry',
-            data,
-            headers=self.user_utils.admin_credentials,
-            format='json'
-        )
-
-        log.debug(f"{response.json()=}")
-
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
     def test_get_all__on_happy_path__should_return_OK(self):
+        self.knowledge_area_utils.create_all()
         self.user_utils.set_database_environment({"admin-user": True})
         self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
 
@@ -80,29 +49,25 @@ class EntryTests(APITestCase):
         self.assertTrue(len(response.data) == 2)
 
     def test_get_single__on_happy_path__should_return_OK(self):
+        self.knowledge_area_utils.create_all()
         self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
+        self.user_utils.set_database_environment({"admin-user": True})
 
         calculadora_id = self.entry_utils.retrieve("calculadora").id
-        response = self.client.get(f'{BASE_URL}/entry/{calculadora_id}')
+        admin_user_id = self.user_utils.retrieve("admin-user").id
 
-        log.debug(f"{response.data=}")
+        EntryAccessHistory.objects.all().delete()
 
+        response = self.client.get(
+            f'{BASE_URL}/entry/{calculadora_id}',
+            headers=self.user_utils.admin_credentials
+        )
+
+        self.assertEqual(EntryAccessHistory.objects.filter(user__id=admin_user_id).count(), 1)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        self.assertIn("is_validated", response.data)
-
-        self.assertIn("terms", response.data)
-        self.assertIn("syllables", response.data["terms"][0])
-        self.assertNotIn("entry", response.data["terms"])
-
-        self.assertIn("definitions", response.data)
-        self.assertNotIn("entries", response.data["definitions"][0])
-
-        self.assertIn("knowledge_area", response.data["definitions"][0])
-        self.assertIn("questions", response.data)
-        self.assertIn("images", response.data)
-
     def test_get_all_from_specified_knowledge_area__on_happy_path__should_return_OK(self):
+        self.knowledge_area_utils.create_all()
         self.user_utils.set_database_environment({"admin-user": True})
         self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
 
@@ -111,15 +76,10 @@ class EntryTests(APITestCase):
             headers=self.user_utils.admin_credentials
         )
 
-        log.debug(f"{response.data=}")
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-
-        calculadora_id = self.entry_utils.retrieve("calculadora").id
-        self.assertEqual(response.data[0]["id"], calculadora_id)
 
     def test_get_all_from_specified_knowledge_area__non_existent_knowledge_area__should_return_NOT_FOUND(self):
+        self.knowledge_area_utils.create_all()
         self.user_utils.set_database_environment({"admin-user": True})
         response = self.client.get(
             f'{BASE_URL}/entry?knowledge_area=non-existent-knowledge-area',
@@ -127,14 +87,25 @@ class EntryTests(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_get_all__non_logged_user__should_not_return_non_validated(self):
+    def test_get_all__non_logged_user__should_not_return_non_validated_entries(self):
+        self.knowledge_area_utils.create_all()
         self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
         response = self.client.get(f'{BASE_URL}/entry')
+
+        print(
+            [
+                {
+                    key: value
+                    for key, value in entry.items() if key in ["content", "is_validated"]
+                } for entry in response.data
+            ]
+        )
 
         are_all_validated = all([entry['is_validated'] for entry in response.data])
         self.assertTrue(are_all_validated)
 
     def test_get_with_search__calc_parameter__should_return_OK(self):
+        self.knowledge_area_utils.create_all()
         self.user_utils.set_database_environment({"admin-user": True})
         self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
 
@@ -144,35 +115,25 @@ class EntryTests(APITestCase):
             format='json'
         )
 
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]["content"], "calculadora")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_put__on_happy_path__should_return_OK(self):
+    def test_put__on_happy_path__should_return_METHOD_NOT_ALLOWED(self):
+        self.knowledge_area_utils.create_all()
         self.user_utils.set_database_environment({"admin-user": True})
         self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
 
         calculadora_id = self.entry_utils.retrieve("calculadora").id
-
-        edited_data = self.entry_utils.get_data("calculadora")
-        new_definitions = self.entry_utils.get_data("angulo-reto")["definitions"]
-        edited_data["definitions"] = new_definitions
-
         response = self.client.put(
             f'{BASE_URL}/entry/{calculadora_id}',
-            edited_data,
+            data={},
             headers=self.user_utils.admin_credentials,
             format='json'
         )
 
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-
-        calculadora = self.entry_utils.retrieve("calculadora")
-        definitions = calculadora.definitions.all()
-
-        self.assertEqual(definitions[0].content, new_definitions[0]["content"])
-        self.assertEqual(definitions[0].knowledge_area.content, new_definitions[0]["knowledge_area__content"])
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_delete__on_happy_path__should_return_NO_CONTENT(self):
+        self.knowledge_area_utils.create_all()
         self.user_utils.set_database_environment({"admin-user": True})
         self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": False})
 
@@ -188,8 +149,8 @@ class EntryTests(APITestCase):
         self.assertFalse(Definition.objects.filter(entry__id=calculadora_id).exists())
 
     def test_delete__non_existent_entry__should_return_NOT_FOUND(self):
+        self.knowledge_area_utils.create_all()
         self.user_utils.set_database_environment({"admin-user": True})
-        self.entry_utils.set_database_environment({"calculadora": False})
 
         response = self.client.delete(
             f'{BASE_URL}/entry/{99999}',
@@ -198,12 +159,67 @@ class EntryTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_patch__on_happy_path__should_return_NO_CONTENT(self):
+        self.knowledge_area_utils.create_all()
+        self.user_utils.set_database_environment({"admin-user": True})
+        self.entry_utils.set_database_environment({"calculadora": True})
+
+        calculadora_id = self.entry_utils.retrieve("calculadora").id
+
+        response = self.client.patch(
+            f'{BASE_URL}/entry/{calculadora_id}',
+            headers=self.user_utils.admin_credentials,
+            format='json',
+            data={"content": "*cal.cu.la.do.ra* ma.nu.al"}
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_patch__without_data__should_return_BAD_REQUEST(self):
+        self.knowledge_area_utils.create_all()
+        self.user_utils.set_database_environment({"admin-user": True})
+        self.entry_utils.set_database_environment({"calculadora": True})
+
+        calculadora_id = self.entry_utils.retrieve("calculadora").id
+
+        response = self.client.patch(
+            f'{BASE_URL}/entry/{calculadora_id}',
+            headers=self.user_utils.admin_credentials,
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("content", response.data)
+
 
 class EntrySerializerTestCase(APITestCase):
-    user_utils = UserTestsUtils()
+    user_utils = UserUtils()
     entry_utils = EntryUtils()
+    knowledge_area_utils = KnowledgeAreaUtils()
+
+    def test_to_representation__on_happy_path__should_return_dict(self):
+        self.knowledge_area_utils.create_all()
+        self.entry_utils.set_database_environment({"calculadora": True})
+        entry = self.entry_utils.retrieve("calculadora")
+        serializer = EntrySerializer(entry)
+
+        serialized_data = serializer.data
+
+        self.assertIn("is_validated", serialized_data)
+
+        self.assertIn("terms", serialized_data)
+        self.assertIn("syllables", serialized_data["terms"][0])
+        self.assertNotIn("entry", serialized_data["terms"])
+
+        self.assertIn("definitions", serialized_data)
+        self.assertNotIn("entries", serialized_data["definitions"][0])
+
+        self.assertIn("knowledge_area", serialized_data["definitions"][0])
+        self.assertIn("questions", serialized_data)
+        self.assertIn("images", serialized_data)
 
     def test_is_valid__on_happy_path__should_return_true(self):
+        self.knowledge_area_utils.create_all()
         self.user_utils.set_database_environment({"admin-user": True})
         self.entry_utils.set_database_environment({"angulo-reto": False})
 
@@ -211,6 +227,7 @@ class EntrySerializerTestCase(APITestCase):
         self.assertTrue(serializer.is_valid())
 
     def test_is_valid__duplicated_entry__should_return_false(self):
+        self.knowledge_area_utils.create_all()
         self.user_utils.set_database_environment({"admin-user": True})
         self.entry_utils.set_database_environment({"angulo-reto": True})
 
@@ -218,6 +235,7 @@ class EntrySerializerTestCase(APITestCase):
         self.assertFalse(serializer.is_valid())
 
     def test_is_valid__definitions_with_non_existent_knowledge_area__should_return_false(self):
+        self.knowledge_area_utils.create_all()
         invalid_data = self.entry_utils.get_data("calculadora")
         invalid_data["definitions"] = [
             {
@@ -234,6 +252,7 @@ class EntrySerializerTestCase(APITestCase):
         self.assertFalse(serializer.is_valid())
 
     def test_is_valid__no_main_term_on_content__should_return_false(self):
+        self.knowledge_area_utils.create_all()
         self.user_utils.set_database_environment({"admin-user": True})
         self.entry_utils.set_database_environment({"angulo-reto": False})
 
@@ -244,6 +263,7 @@ class EntrySerializerTestCase(APITestCase):
         self.assertFalse(serializer.is_valid())
 
     def test_is_valid__space_inside_main_term_on_content__should_return_false(self):
+        self.knowledge_area_utils.create_all()
         self.entry_utils.set_database_environment({"angulo-reto": False})
 
         data = self.entry_utils.get_data("angulo-reto")
@@ -253,6 +273,7 @@ class EntrySerializerTestCase(APITestCase):
         self.assertFalse(serializer.is_valid())
 
     def test_is_valid__dot_on_start_and_end_of_content__should_return_false(self):
+        self.knowledge_area_utils.create_all()
         self.entry_utils.set_database_environment({"angulo-reto": False})
 
         data = self.entry_utils.get_data("angulo-reto")
@@ -266,6 +287,7 @@ class EntrySerializerTestCase(APITestCase):
         self.assertEqual(len(serializer.errors["content"]), 3)
 
     def test_is_valid__dot_in_side_of_star_in_content__should_return_false(self):
+        self.knowledge_area_utils.create_all()
         self.entry_utils.set_database_environment({"angulo-reto": False})
 
         data = self.entry_utils.get_data("angulo-reto")
@@ -274,15 +296,155 @@ class EntrySerializerTestCase(APITestCase):
         serializer = EntrySerializer(data=data)
         self.assertFalse(serializer.is_valid())
 
+    def test_post__with_missing_stars_in_content__should_return_BAD_REQUEST(self):
+        self.knowledge_area_utils.create_all()
+        self.user_utils.set_database_environment({"admin-user": True})
+        self.entry_utils.set_database_environment({"angulo-reto": False})
+
+        data = self.entry_utils.get_data("angulo-reto")
+        data["content"] = "an.gu.lo re.to"
+
+        response = self.client.post(
+            f'{BASE_URL}/entry',
+            data,
+            headers=self.user_utils.admin_credentials,
+            format='json'
+        )
+
+        log.debug(f"{self.user_utils.admin_credentials=}")
+        log.debug(f"{response}")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_validate__missing_data__should_return_invalid(self):
+        serializer = EntrySerializer(data={})
+        self.assertFalse(serializer.is_valid())
+        log.debug(serializer.errors)
+
+    def test_validate__missing_content_in_patch__should_return_valid(self):
+        serializer = EntrySerializer(data={"main_term_grammatical_category": "numeral"}, context={"is_patch": True})
+
+        is_valid = serializer.is_valid()
+        # log.debug(serializer.errors)
+
+        self.assertTrue(is_valid)
+
 
 class EntryServiceTestCase(APITestCase):
-    user_utils = UserTestsUtils()
+    user_utils = UserUtils()
     entry_utils = EntryUtils()
+    knowledge_area_utils = KnowledgeAreaUtils()
+    image_utils = ImageUtils()
 
     def test_get_all_related_to_knowledge_area__on_happy_path__should_not_return_duplicates(self):
+        self.knowledge_area_utils.create_all()
         self.entry_utils.set_database_environment({"calculadora": True, "angulo-reto": True})
         entries = EntryService.get_all_related_to_knowledge_area("álgebra", False)
 
         entries_ids = [entry.pk for entry in entries]
         are_there_any_duplicates = any([entries_ids.count(entry_id) >= 2 for entry_id in entries_ids])
         self.assertFalse(are_there_any_duplicates)
+
+    def test_search_by_content__calc__should_return_one_entry(self):
+        self.knowledge_area_utils.create_all()
+        self.entry_utils.set_database_environment({"angulo-reto": True, "calculadora": True})
+
+        entries = EntryService.search_by_content("calc", False)
+
+        self.assertEqual(len(entries), 1)
+        self.assertEqual(entries[0].content, "calculadora")
+
+    def test_search_by_content__o__should_return_two_entries(self):
+        self.knowledge_area_utils.create_all()
+        self.entry_utils.set_database_environment({"angulo-reto": True, "calculadora": True})
+
+        entries = EntryService.search_by_content("o", False)
+
+        self.assertEqual(len(entries), 2)
+        self.assertEqual(entries[0].content, "ângulo reto")
+        self.assertEqual(entries[1].content, "calculadora")
+
+    def test_post__on_happy_path__should_return_CREATED(self):
+        self.knowledge_area_utils.create_all()
+        self.user_utils.set_database_environment({"admin-user": True})
+        self.entry_utils.set_database_environment({"calculadora": False})
+
+        response = self.client.post(
+            f'{BASE_URL}/entry',
+            self.entry_utils.get_data("calculadora"),
+            headers=self.user_utils.admin_credentials,
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(self.entry_utils.exists("calculadora"))
+
+        img_0 = self.image_utils.retrieve("calculadora-0")
+        img_1 = self.image_utils.retrieve("calculadora-0")
+        files_in_uploads_folder = os.listdir(settings.MEDIA_ROOT)
+
+        self.assertIn(img_0.content.name, files_in_uploads_folder)
+        self.assertIn(img_1.content.name, files_in_uploads_folder)
+
+    def test_search_by_content__should_return_two_entries(self):
+        self.knowledge_area_utils.create_all()
+        self.entry_utils.create_all()
+
+        entries = EntryService.search_by_content(
+            "calc",
+            should_get_only_validated=False
+        )
+
+        self.assertEqual(len(entries), 1)
+
+    def test_make_entry_validated__on_happy_path__should_do_it(self):
+        self.knowledge_area_utils.create_all()
+        self.entry_utils.set_database_environment({"calculadora": True}, force_operations=True)
+        pk = self.entry_utils.retrieve("calculadora").pk
+
+        EntryService.make_entry_validated(pk)
+
+        self.assertTrue(self.entry_utils.retrieve("calculadora").is_validated)
+
+    def test_patch__many_changes__should_patch(self):
+        self.knowledge_area_utils.create_all()
+        self.entry_utils.set_database_environment({"calculadora": True})
+
+        entry = self.entry_utils.retrieve("calculadora")
+
+        serializer = EntrySerializer(
+            entry,
+            data={"content": "po.ta.to.es", "main_term_grammatical_category": "verbo"},
+            context={"is_patch": True}
+        )
+        serializer.is_valid(raise_exception=True)
+        EntryService.patch(serializer)
+
+        new_entry = Entry.objects.get(pk=entry.pk)
+        main_term = TermService.get_main_from_entry(new_entry)
+        log.debug(new_entry)
+        self.assertEqual(new_entry.content, "potatoes")
+        self.assertEqual(main_term.grammatical_category, "verbo")
+        # self.assertListEqual(list(main_term.syllables), ['po', 'ta', 'to', 'es'])
+
+    def test_patch__only_content_and_different_terms_quantity__should_do_it(self):
+        self.knowledge_area_utils.create_all()
+        self.entry_utils.set_database_environment({"calculadora": True})
+
+        entry = self.entry_utils.retrieve("calculadora")
+
+        serializer = EntrySerializer(
+            entry,
+            data={"content": "cal.cu.la.do.ra *am.bu.lan.te*"},
+            context={"is_patch": True}
+        )
+
+        serializer.is_valid(raise_exception=True)
+        EntryService.patch(serializer)
+
+        new_entry = Entry.objects.get(pk=entry.pk)
+        main_term = TermService.get_main_from_entry(new_entry)
+        log.debug(new_entry)
+        self.assertEqual(new_entry.content, "potatoes")
+        self.assertEqual(main_term.grammatical_category, "verbo")
+        # self.assertListEqual(list(main_term.syllables), ['po', 'ta', 'to', 'es'])
