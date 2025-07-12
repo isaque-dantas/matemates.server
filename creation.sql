@@ -1,3 +1,5 @@
+
+
 CREATE TABLE `api_user`
 (
     `id`            bigint AUTO_INCREMENT NOT NULL PRIMARY KEY,
@@ -20,8 +22,15 @@ CREATE TABLE `api_entry`
 CREATE TABLE `api_knowledgearea`
 (
     `id`      bigint AUTO_INCREMENT NOT NULL PRIMARY KEY,
-    `content` varchar(128)          NOT NULL UNIQUE,
-    `subject` varchar(128)          NOT NULL
+    `content` varchar(128)          NOT NULL UNIQUE
+);
+
+CREATE TABLE `api_entryaccesshistory`
+(
+    `id`            bigint AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    `access_moment` datetime(6)           NOT NULL,
+    `entry_id`      bigint                NOT NULL,
+    `user_id`       bigint                NOT NULL
 );
 
 CREATE TABLE `api_image`
@@ -50,11 +59,10 @@ CREATE TABLE `api_definition`
 
 CREATE TABLE `api_question`
 (
-    `id`          bigint AUTO_INCREMENT NOT NULL PRIMARY KEY,
-    `statement`   varchar(256)          NOT NULL,
-    `answer`      varchar(256)          NOT NULL,
-    `explanation` varchar(256)          NOT NULL,
-    `entry_id`    bigint                NOT NULL
+    `id`        bigint AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    `statement` varchar(256)          NOT NULL,
+    `answer`    varchar(256)          NOT NULL,
+    `entry_id`  bigint                NOT NULL
 );
 
 CREATE TABLE `api_term`
@@ -73,6 +81,14 @@ CREATE TABLE `api_syllable`
     `content` varchar(16)           NOT NULL,
     `term_id` bigint                NOT NULL
 );
+
+ALTER TABLE `api_entryaccesshistory`
+    ADD CONSTRAINT `api_entryaccesshistory_entry_id_d2db1af6_fk_api_entry_id`
+        FOREIGN KEY (`entry_id`) REFERENCES `api_entry` (`id`);
+
+ALTER TABLE `api_entryaccesshistory`
+    ADD CONSTRAINT `api_entryaccesshistory_user_id_d0e8ef3c_fk_api_user_id`
+        FOREIGN KEY (`user_id`) REFERENCES `api_user` (`id`);
 
 ALTER TABLE `api_image`
     ADD CONSTRAINT `api_image_entry_id_7287b5c0_fk_api_entry_id`
