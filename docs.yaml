@@ -1,0 +1,1473 @@
+openapi: 3.0.1
+info:
+  title: Matematês DOCS
+  description: ''
+  version: 1.0.0
+tags:
+  - name: entry
+    description: All about Math-related data
+  - name: term
+    description: Terms that compose an entry
+  - name: definition
+    description: Synthesis of knowledge
+  - name: image
+    description: Ilustrations about Math
+  - name: question
+    description: Examples that help the understanding
+  - name: knowledge_area
+    description: Fields of Math research
+  - name: user
+    description: Operations about user
+paths:
+  /token:
+    post:
+      summary: Get credentials token
+      deprecated: false
+      description: ''
+      tags:
+        - user
+      parameters:
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              required:
+                - email
+                - password
+            examples: {}
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  refresh:
+                    type: string
+                  access:
+                    type: string
+                required:
+                  - access
+                  - refresh
+              example:
+                refresh: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc0Nzk0NjkzNCwiaWF0IjoxNzQ3ODYwNTM0LCJqdGkiOiJhNmJjMDZmYTI0ZjM0ZjUxODQ1NmRkMTYwN2Y4ZWFhMCIsInVzZXJfaWQiOjF9.U9TgK0GJDzGzocoRHBZI0uN64c9bmvLegD1HGWcFtkA
+                access: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ3ODgyMTM0LCJpYXQiOjE3NDc4NjA1MzQsImp0aSI6IjM4NmJhM2U4MjliYzQ4OTg5OTBjNTY4MzI3MzEwYmVkIiwidXNlcl9pZCI6MX0.gL0QmrmhX51_GuXcEGXOqPF-0IApOnN2UUlAH3m7oGM
+          headers: {}
+      security: []
+  /token/refresh:
+    post:
+      summary: Get credentials token using refresh
+      deprecated: false
+      description: ''
+      tags:
+        - user
+      parameters:
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh:
+                  type: string
+              required:
+                - refresh
+            example:
+              refresh: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc0Nzk0NzA1NywiaWF0IjoxNzQ3ODYwNjU3LCJqdGkiOiIyNDc5MDcxOGM1YTY0MzgwYjZhOTc3ODcyZjAzZjE0MyIsInVzZXJfaWQiOjF9.GxCxsAy0SwABOsWv2WP9M5e1t08zvklSF9r6R77QtJ0
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access:
+                    type: string
+              example:
+                access: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ3ODgyMjgwLCJpYXQiOjE3NDc4NjA2NTcsImp0aSI6IjgxMDgwODZkYjZiNTRmZTdhZDdhNmM4MDdjN2UyMzk5IiwidXNlcl9pZCI6MX0.jq-AFbywefSsNJgNtDVHctyftdpqJ7z7v31ng4OixFE
+          headers: {}
+      security: []
+  /users:
+    get:
+      summary: Find user based on credentials
+      deprecated: false
+      description: ''
+      tags:
+        - user
+      parameters:
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              example:
+                name: Common User
+                email: common-user@email.com
+                username: common-user
+          headers: {}
+      security: []
+    post:
+      summary: Register a new user
+      deprecated: false
+      description: ''
+      tags:
+        - user
+      parameters:
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+            example:
+              name: Common User
+              email: common-user@email.com
+              password: pass
+              username: common-user
+              profile_image_base64: data:image/jpeg;base64,/9j/4AAQSkZJRgABAgAAZABkAAD/7AA...
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          headers: {}
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+          headers: {}
+      security: []
+    put:
+      summary: Update profile
+      deprecated: false
+      description: ''
+      tags:
+        - user
+      parameters:
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+            examples: {}
+      responses:
+        '204':
+          description: ''
+          headers: {}
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+          headers: {}
+      security: []
+    delete:
+      summary: Delete user accout
+      deprecated: false
+      description: ''
+      tags:
+        - user
+      parameters:
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      responses:
+        '204':
+          description: ''
+          headers: {}
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+          headers: {}
+      security: []
+  /users/profile_image:
+    get:
+      summary: Find profile image
+      deprecated: false
+      description: ''
+      tags:
+        - user
+      parameters:
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              example:
+                name: Common User
+                email: common-user@email.com
+                username: common-user
+          headers: {}
+      security: []
+    patch:
+      summary: Update user profile image
+      deprecated: false
+      description: ''
+      tags:
+        - user
+      parameters:
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                profile_image_base64:
+                  type: string
+            examples: {}
+      responses:
+        '204':
+          description: ''
+          headers: {}
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+          headers: {}
+      security: []
+  /users/turn-admin:
+    post:
+      summary: Turn user admin
+      deprecated: false
+      description: ''
+      tags:
+        - user
+      parameters:
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+              required:
+                - email
+            example: |-
+              {
+                  "email": "common-user@email.com",
+              }
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          headers: {}
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+          headers: {}
+      security: []
+  /image/{id}:
+    get:
+      summary: Find image by ID
+      deprecated: false
+      description: ''
+      tags:
+        - entry
+      parameters:
+        - name: id
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Image'
+          headers: {}
+        '404':
+          description: ''
+          headers: {}
+      security: []
+    put:
+      summary: Update existing image
+      deprecated: false
+      description: ''
+      tags:
+        - image
+      parameters:
+        - name: id
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImageToSend'
+            examples: {}
+      responses:
+        '204':
+          description: ''
+          headers: {}
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+          headers: {}
+        '404':
+          description: ''
+          headers: {}
+      security: []
+    delete:
+      summary: Delete image
+      deprecated: false
+      description: ''
+      tags:
+        - entry
+      parameters:
+        - name: id
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      responses:
+        '204':
+          description: ''
+          headers: {}
+        '404':
+          description: ''
+          headers: {}
+      security: []
+  /image/{id}/blob_file:
+    get:
+      summary: Get image blob file by ID
+      deprecated: false
+      description: ''
+      tags:
+        - image
+      parameters:
+        - name: id
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Image'
+          headers: {}
+        '404':
+          description: ''
+          headers: {}
+      security: []
+  /image:
+    post:
+      summary: Add new image
+      deprecated: false
+      description: ''
+      tags:
+        - image
+      parameters:
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImageToSend'
+            examples: {}
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Image'
+          headers: {}
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+          headers: {}
+      security: []
+  /definition/{id}:
+    get:
+      summary: Find definition by ID
+      deprecated: false
+      description: ''
+      tags:
+        - definition
+      parameters:
+        - name: id
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Definition'
+          headers: {}
+        '404':
+          description: ''
+          headers: {}
+      security: []
+    put:
+      summary: Update existing definition
+      deprecated: false
+      description: ''
+      tags:
+        - definition
+      parameters:
+        - name: id
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DefinitionToSend'
+            examples: {}
+      responses:
+        '204':
+          description: ''
+          headers: {}
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+          headers: {}
+        '404':
+          description: ''
+          headers: {}
+      security: []
+    delete:
+      summary: Delete definition
+      deprecated: false
+      description: ''
+      tags:
+        - definition
+      parameters:
+        - name: id
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      responses:
+        '204':
+          description: ''
+          headers: {}
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+          headers: {}
+        '404':
+          description: ''
+          headers: {}
+      security: []
+  /definition:
+    post:
+      summary: Add new definition
+      deprecated: false
+      description: ''
+      tags:
+        - definition
+      parameters:
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DefinitionToSend'
+            examples: {}
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Definition'
+          headers: {}
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+          headers: {}
+      security: []
+  /question/{id}:
+    get:
+      summary: Find question by ID
+      deprecated: false
+      description: ''
+      tags:
+        - question
+      parameters:
+        - name: id
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+          headers: {}
+        '404':
+          description: ''
+          headers: {}
+      security: []
+    put:
+      summary: Update existing Question
+      deprecated: false
+      description: ''
+      tags:
+        - question
+      parameters:
+        - name: id
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Question'
+            examples: {}
+      responses:
+        '204':
+          description: ''
+          headers: {}
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+          headers: {}
+        '404':
+          description: ''
+          headers: {}
+      security: []
+    delete:
+      summary: Delete question
+      deprecated: false
+      description: ''
+      tags:
+        - question
+      parameters:
+        - name: id
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      responses:
+        '204':
+          description: ''
+          headers: {}
+        '404':
+          description: ''
+          headers: {}
+      security: []
+  /question:
+    post:
+      summary: Add new question
+      deprecated: false
+      description: ''
+      tags:
+        - question
+      parameters:
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Question'
+            examples: {}
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+          headers: {}
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+          headers: {}
+      security: []
+  /knowledge_area/{id}:
+    get:
+      summary: Find knowledge area by ID
+      deprecated: false
+      description: ''
+      tags:
+        - knowledge_area
+      parameters:
+        - name: id
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KnowledgeArea'
+          headers: {}
+        '404':
+          description: ''
+          headers: {}
+      security: []
+    put:
+      summary: Update existing knowledge area
+      deprecated: false
+      description: ''
+      tags:
+        - knowledge_area
+      parameters:
+        - name: id
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Question'
+            examples: {}
+      responses:
+        '204':
+          description: ''
+          headers: {}
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+          headers: {}
+        '404':
+          description: ''
+          headers: {}
+      security: []
+    delete:
+      summary: Delete knowledge area
+      deprecated: false
+      description: ''
+      tags:
+        - knowledge_area
+      parameters:
+        - name: id
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      responses:
+        '204':
+          description: ''
+          headers: {}
+        '404':
+          description: ''
+          headers: {}
+      security: []
+  /knowledge_area:
+    get:
+      summary: Find knowledge areas
+      deprecated: false
+      description: ''
+      tags:
+        - knowledge_area
+      parameters:
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/KnowledgeArea'
+          headers: {}
+      security: []
+    post:
+      summary: Add new knowledge area
+      deprecated: false
+      description: ''
+      tags:
+        - knowledge_area
+      parameters:
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Question'
+            examples: {}
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+          headers: {}
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+          headers: {}
+      security: []
+  /entry:
+    get:
+      summary: Find entries
+      deprecated: false
+      description: ''
+      tags:
+        - entry
+      parameters:
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Entry'
+          headers: {}
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+          headers: {}
+      security: []
+    post:
+      summary: Add new entry
+      deprecated: false
+      description: ''
+      tags:
+        - entry
+      parameters:
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EntryToSend'
+            examples: {}
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entry'
+          headers: {}
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+          headers: {}
+      security: []
+  /entry/{id}/validate:
+    patch:
+      summary: Validate entry
+      deprecated: false
+      description: ''
+      tags:
+        - entry
+      parameters:
+        - name: id
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      responses:
+        '204':
+          description: ''
+          headers: {}
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+          headers: {}
+        '404':
+          description: ''
+          headers: {}
+      security: []
+  /entry/{id}:
+    get:
+      summary: Find entry by ID
+      deprecated: false
+      description: ''
+      tags:
+        - entry
+      parameters:
+        - name: id
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entry'
+          headers: {}
+        '404':
+          description: ''
+          headers: {}
+      security: []
+    patch:
+      summary: Update existing entry
+      deprecated: false
+      description: ''
+      tags:
+        - entry
+      parameters:
+        - name: id
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                main_term_grammatical_category:
+                  type: string
+                main_term_gender:
+                  type: string
+            examples: {}
+      responses:
+        '204':
+          description: ''
+          headers: {}
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+          headers: {}
+        '404':
+          description: ''
+          headers: {}
+      security: []
+    delete:
+      summary: Delete entry
+      deprecated: false
+      description: ''
+      tags:
+        - entry
+      parameters:
+        - name: id
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      responses:
+        '204':
+          description: ''
+          headers: {}
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+          headers: {}
+      security: []
+  /history:
+    get:
+      summary: View History
+      deprecated: false
+      description: ''
+      tags:
+        - user
+      parameters:
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    access_moment:
+                      type: string
+                    entry:
+                      $ref: '#/components/schemas/Entry'
+                  required:
+                    - access_moment
+                    - entry
+          headers: {}
+      security: []
+  /history/most_accessed:
+    get:
+      summary: View Most Accessed
+      deprecated: false
+      description: ''
+      tags:
+        - user
+      parameters:
+        - name: Authorization
+          in: header
+          description: JWT Bearer Token
+          required: false
+          example: ''
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    access_moment:
+                      type: string
+                    entry:
+                      $ref: '#/components/schemas/Entry'
+                  required:
+                    - access_moment
+                    - entry
+          headers: {}
+      security: []
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        username:
+          type: string
+        profile_image_base64:
+          type: string
+      required:
+        - name
+        - email
+        - password
+        - username
+    KnowledgeArea:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID
+        subject:
+          type: string
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entry'
+          nullable: true
+      required:
+        - id
+        - subject
+    DefinitionToSend:
+      type: object
+      properties:
+        content:
+          type: string
+        knowledge_area__content:
+          type: string
+        entry:
+          type: integer
+          nullable: true
+      required:
+        - content
+        - knowledge_area__content
+    Definition:
+      type: object
+      properties:
+        id:
+          type: integer
+        content:
+          type: string
+        knowledge_area:
+          $ref: '#/components/schemas/KnowledgeArea'
+      required:
+        - content
+        - knowledge_area
+        - id
+    Image:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID
+        caption:
+          type: string
+          description: name
+        url:
+          type: string
+      required:
+        - url
+        - id
+        - caption
+    ImageToSend:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID
+        caption:
+          type: string
+        base64_image:
+          type: string
+        entry:
+          type: integer
+          nullable: true
+      required:
+        - base64_image
+    Question:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID
+        statement:
+          type: string
+        answer:
+          type: string
+        entry:
+          type: integer
+          nullable: true
+      required:
+        - statement
+        - answer
+    Term:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID
+        content:
+          type: string
+        gender:
+          type: string
+        grammatical_category:
+          type: string
+        is_main_term:
+          type: boolean
+        syllables:
+          type: array
+          items:
+            type: string
+      required:
+        - content
+        - gender
+        - grammatical_category
+        - is_main_term
+        - syllables
+        - id
+    Entry:
+      type: object
+      properties:
+        id:
+          type: integer
+        content:
+          type: string
+        main_term_gender:
+          type: string
+        is_validated:
+          type: boolean
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/Image'
+          minItems: 1
+        terms:
+          type: array
+          items:
+            $ref: '#/components/schemas/Term'
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Question'
+        definitions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Definition'
+      required:
+        - id
+        - content
+        - main_term_gender
+        - is_validated
+        - images
+        - terms
+        - questions
+        - definitions
+    EntryToSend:
+      type: object
+      properties:
+        content:
+          type: string
+        main_term_gender:
+          type: string
+        main_term_grammatical_category:
+          type: string
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Question'
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImageToSend'
+        definitions:
+          type: array
+          items:
+            $ref: '#/components/schemas/DefinitionToSend'
+      required:
+        - content
+        - main_term_gender
+        - main_term_grammatical_category
+        - questions
+        - images
+        - definitions
+  securitySchemes: {}
+servers: []
+security: []
