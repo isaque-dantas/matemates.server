@@ -1,7 +1,9 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework import status
+from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from api import log
 from api.serializers.entry import EntrySerializer
@@ -9,9 +11,10 @@ from api.services.entry import EntryService
 from api.services.entry_access_history import EntryAccessHistoryService
 from api.services.knowledge_area import KnowledgeAreaService
 from api.services.user import UserService
+from api.views import APIViewWithAdminPermissions
 
 
-class EntryView(APIView):
+class EntryView(APIViewWithAdminPermissions):
     @staticmethod
     def get(request):
         should_get_only_validated = not UserService.can_see_non_validated_entries(request.user)
@@ -42,14 +45,6 @@ class EntryView(APIView):
 
     @staticmethod
     def post(request):
-        if not request.user.is_authenticated:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-        if not request.user.is_staff:
-            return Response(status=status.HTTP_403_FORBIDDEN)
-
-        log.debug(f'{request.user.is_staff=}')
-
         serializer = EntrySerializer(data=request.data)
 
         if not serializer.is_valid():
@@ -61,7 +56,7 @@ class EntryView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class SingleEntryView(APIView):
+class SingleEntryView(APIViewWithAdminPermissions):
     @staticmethod
     def get(request, pk: int):
         if not EntryService.exists(pk):
@@ -83,19 +78,13 @@ class SingleEntryView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @staticmethod
-    def put(request, pk):
+    def put(_, __):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     @staticmethod
     def patch(request, pk):
         if not EntryService.exists(pk):
             return Response(status=status.HTTP_404_NOT_FOUND)
-
-        if not request.user.is_authenticated:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-        if not request.user.is_staff:
-            return Response(status=status.HTTP_403_FORBIDDEN)
 
         log.debug(request.data)
 
@@ -110,7 +99,7 @@ class SingleEntryView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @staticmethod
-    def delete(request, pk: int):
+    def delete(_, pk: int):
         if not EntryService.exists(pk):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -119,15 +108,10 @@ class SingleEntryView(APIView):
 
 
 @api_view(["PATCH"])
-def validate(request, pk):
+@permission_classes([IsAdminUser])
+def validate(_, pk):
     if not EntryService.exists(pk):
         return Response(status=status.HTTP_404_NOT_FOUND)
-
-    if not request.user.is_authenticated:
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-    if not request.user.is_staff:
-        return Response(status=status.HTTP_403_FORBIDDEN)
 
     EntryService.make_entry_validated(pk)
 

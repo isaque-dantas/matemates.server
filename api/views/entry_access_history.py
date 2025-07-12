@@ -1,5 +1,6 @@
 from rest_framework import status
 from rest_framework.decorators import api_view
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -10,11 +11,10 @@ from api.services.user import UserService
 
 
 class EntryAccessHistoryView(APIView):
+    permission_classes = [IsAuthenticated]
+
     @staticmethod
     def get(request):
-        if not request.user.is_authenticated:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-
         history = EntryAccessHistoryService.get_from_user(request.user.pk)
         serializer = EntryAccessHistorySerializer(history, many=True, context={'request': request})
 

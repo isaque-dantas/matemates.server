@@ -56,6 +56,10 @@ class EntrySerializer(serializers.ModelSerializer):
 
         if not data['images'].initial_data:
             errors.append(f"O campo 'images' é obrigatório.")
+        else:
+            log.debug("PASSOU NO ELSE DO IMAGESERIALIZER.VALIDATE")
+            log.debug(data['images'])
+            data['images'].validate(data['images'])
 
         if not data['definitions'].initial_data:
             errors.append(f"O campo 'definitions' é obrigatório.")

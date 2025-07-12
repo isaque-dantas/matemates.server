@@ -34,6 +34,8 @@ class DefinitionSerializer(ModelSerializer):
     def validate(self, attrs):
         errors = []
 
+        log.debug("PASSOU EM DEFINITIONSERIALIZER.VALIDATE")
+
         if self.context.get('is_creation') and not attrs.get("entry"):
             errors.append("É obrigatório informar o 'id' do verbete na criação da definição.")
 

@@ -9,17 +9,12 @@ from api.serializers.definition import DefinitionSerializer
 from api.services.definition import DefinitionService
 from api.services.knowledge_area import KnowledgeAreaService
 from api.services.user import UserService
+from api.views import APIViewWithAdminPermissions
 
 
-class DefinitionView(APIView):
+class DefinitionView(APIViewWithAdminPermissions):
     @staticmethod
     def post(request):
-        if not request.user.is_authenticated:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-        if not request.user.is_staff:
-            return Response(status=status.HTTP_403_FORBIDDEN)
-
         serializer = DefinitionSerializer(data=request.data, context={'is_creation': True})
 
         if not serializer.is_valid():
@@ -31,7 +26,7 @@ class DefinitionView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class SingleDefinitionView(APIView):
+class SingleDefinitionView(APIViewWithAdminPermissions):
     @staticmethod
     def get(request, pk: int):
         if not DefinitionService.exists(pk):
@@ -56,12 +51,6 @@ class SingleDefinitionView(APIView):
         if not DefinitionService.exists(pk):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        if not request.user.is_authenticated:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-        if not request.user.is_staff:
-            return Response(status=status.HTTP_403_FORBIDDEN)
-
         definition_to_update = DefinitionService.get(pk)
         serializer = DefinitionSerializer(instance=definition_to_update, data=request.data)
         if not serializer.is_valid():
@@ -72,15 +61,9 @@ class SingleDefinitionView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @staticmethod
-    def delete(request, pk: int):
+    def delete(_, pk: int):
         if not DefinitionService.exists(pk):
             return Response(status=status.HTTP_404_NOT_FOUND)
-
-        if not request.user.is_authenticated:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-        if not request.user.is_staff:
-            return Response(status=status.HTTP_403_FORBIDDEN)
 
         DefinitionService.delete(pk)
         return Response(status=status.HTTP_204_NO_CONTENT)

@@ -37,7 +37,6 @@ knowledge_area_urls = [
 ]
 
 user_urls = [
-    path('hello-world', user.hello_world),
     path('users', user.UserView.as_view()),
     path('users/turn-admin', user.turn_admin_view),
     path('users/profile_image', user.UserProfileImageView.as_view()),

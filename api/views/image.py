@@ -8,17 +8,12 @@ from rest_framework.views import APIView
 from api.serializers.image import ImageSerializer
 from api.services.image import ImageService
 from api.services.user import UserService
+from api.views import APIViewWithAdminPermissions
 
 
-class ImageView(APIView):
+class ImageView(APIViewWithAdminPermissions):
     @staticmethod
     def post(request):
-        if not request.user.is_authenticated:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-        if not request.user.is_staff:
-            return Response(status=status.HTTP_403_FORBIDDEN)
-
         serializer = ImageSerializer(data=request.data)
 
         if not serializer.is_valid():
@@ -52,12 +47,6 @@ class SingleImageView(APIView):
         if not ImageService.exists(pk):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        if not request.user.is_authenticated:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-        if not request.user.is_staff:
-            return Response(status=status.HTTP_403_FORBIDDEN)
-
         image = ImageService.get(pk)
         serializer = ImageSerializer(image, data=request.data)
         if not serializer.is_valid():
@@ -68,21 +57,15 @@ class SingleImageView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @staticmethod
-    def delete(request, pk):
+    def delete(_, pk):
         if not ImageService.exists(pk):
             return Response(status=status.HTTP_404_NOT_FOUND)
-
-        if not request.user.is_authenticated:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-        if not request.user.is_staff:
-            return Response(status=status.HTTP_403_FORBIDDEN)
 
         ImageService.delete(pk)
         return Response(status=HTTP_204_NO_CONTENT)
 
 
-@api_view()
+@api_view(['GET'])
 def get_image_blob_file(request, pk):
     if not ImageService.exists(pk):
         return Response(status=status.HTTP_404_NOT_FOUND)

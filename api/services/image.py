@@ -1,4 +1,5 @@
 from drf_base64.fields import Base64ImageField
+from rest_framework.exceptions import ValidationError
 
 from api import log
 from api.models import Image, Entry
@@ -100,3 +101,26 @@ class ImageService:
         image = cls.get(pk)
         image.content.delete()
         image.delete()
+
+    @classmethod
+    def is_content_base64_encoded(cls, content: str):
+        return (
+            content.startswith("data:image/")
+            and
+            ';base64,' in content
+        )
+
+    @classmethod
+    def validate(cls, attrs):
+        errors = [
+            {"base64_image": "A imagem deve estar no formato base64."}
+
+            for i, attr in enumerate(attrs)
+
+            if not cls.is_content_base64_encoded(attr.get('base64_image'))
+        ]
+
+        if len(errors) == 0:
+            return None
+
+        raise ValidationError({'images': errors})

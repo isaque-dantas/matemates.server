@@ -6,9 +6,10 @@ from api.models import KnowledgeArea
 from api.serializers.knowledge_area import KnowledgeAreaSerializer
 from api.services.knowledge_area import KnowledgeAreaService
 from api.services.user import UserService
+from api.views import APIViewWithAdminPermissions
 
 
-class KnowledgeAreaView(APIView):
+class KnowledgeAreaView(APIViewWithAdminPermissions):
     @staticmethod
     def get(request):
         knowledge_areas = KnowledgeArea.objects.all()
@@ -25,12 +26,6 @@ class KnowledgeAreaView(APIView):
 
     @staticmethod
     def post(request):
-        if not request.user.is_authenticated:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-        if not request.user.is_staff:
-            return Response(status=status.HTTP_403_FORBIDDEN)
-
         serializer = KnowledgeAreaSerializer(data=request.data)
 
         if not serializer.is_valid():
@@ -42,17 +37,11 @@ class KnowledgeAreaView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class SingleKnowledgeAreaView(APIView):
+class SingleKnowledgeAreaView(APIViewWithAdminPermissions):
     @staticmethod
     def get(request, pk):
         if not KnowledgeAreaService.exists(pk):
             return Response(status=status.HTTP_404_NOT_FOUND)
-
-        if not request.user.is_authenticated:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-        if not request.user.is_staff:
-            return Response(status=status.HTTP_403_FORBIDDEN)
 
         knowledge_area = KnowledgeAreaService.get(pk)
         serializer = KnowledgeAreaSerializer(
@@ -70,12 +59,6 @@ class SingleKnowledgeAreaView(APIView):
         if not KnowledgeAreaService.exists(pk):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        if not request.user.is_authenticated:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-        if not request.user.is_staff:
-            return Response(status=status.HTTP_403_FORBIDDEN)
-
         knowledge_area_to_update = KnowledgeAreaService.get(pk)
         serializer = KnowledgeAreaSerializer(
             instance=knowledge_area_to_update,
@@ -90,16 +73,9 @@ class SingleKnowledgeAreaView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @staticmethod
-
-    def delete(request, pk):
+    def delete(_, pk):
         if not KnowledgeAreaService.exists(pk):
             return Response(status=status.HTTP_404_NOT_FOUND)
-
-        if not request.user.is_authenticated:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-        if not request.user.is_staff:
-            return Response(status=status.HTTP_403_FORBIDDEN)
 
         KnowledgeAreaService.delete(pk)
         return Response(status=status.HTTP_204_NO_CONTENT)
