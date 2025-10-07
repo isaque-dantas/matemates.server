@@ -1,4 +1,4 @@
-# Matematês 📝
+<img width="301" height="176" alt="image" src="https://github.com/user-attachments/assets/19b6b5b5-a2a1-443b-a7bd-d238ab557b61" /># Matematês 📝
 
 ⭐ **O dicionário de matemática mais confiável da internet!** ⭐
 
@@ -16,7 +16,7 @@
 Este é o projeto integrador dos estudantes Davi Lucas, Isaque Dantas e Lucas Henrique, do IFRN Campus Natal - Zona-Norte.
 
 - Orientador: Prof. Rafael The Bonifácio de Andrade
-- Co-orientadora: Profa. {{ teacher_name }}
+- Co-orientadora: Profa. Maíra Andrade
 
 ## Como instalar e executar
 - Clone esse repositório e o cliente (https://gitlab.com/davibezerra123457/matemates-client.git)
